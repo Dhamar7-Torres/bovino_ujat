@@ -1,1 +1,693 @@
-// Placeholder content for responsive.css
+/**
+ * Estilos Responsivos - Sistema de gestión de bovinos
+ * Media queries y adaptaciones para diferentes dispositivos
+ */
+
+/* ============== BREAKPOINTS Y CONTENEDORES ============== */
+
+/* Contenedores responsivos */
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--spacing-4);
+}
+
+/* Mobile First - Base */
+@media (min-width: 0) {
+  .container {
+    max-width: 100%;
+  }
+}
+
+/* Small devices (landscape phones, 640px and up) */
+@media (min-width: 640px) {
+  .container {
+    max-width: var(--container-sm);
+    padding: 0 var(--spacing-6);
+  }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) {
+  .container {
+    max-width: var(--container-md);
+  }
+}
+
+/* Large devices (desktops, 1024px and up) */
+@media (min-width: 1024px) {
+  .container {
+    max-width: var(--container-lg);
+  }
+}
+
+/* Extra large devices (large desktops, 1280px and up) */
+@media (min-width: 1280px) {
+  .container {
+    max-width: var(--container-xl);
+  }
+}
+
+/* 2x Extra large devices (larger desktops, 1536px and up) */
+@media (min-width: 1536px) {
+  .container {
+    max-width: var(--container-2xl);
+  }
+}
+
+/* ============== MOBILE (0-640px) ============== */
+
+@media (max-width: 639px) {
+  /* Tipografía móvil */
+  h1 {
+    font-size: var(--font-size-2xl);
+  }
+  
+  h2 {
+    font-size: var(--font-size-xl);
+  }
+  
+  h3 {
+    font-size: var(--font-size-lg);
+  }
+  
+  /* Layout móvil */
+  .sidebar {
+    transform: translateX(-100%);
+    width: 100%;
+    z-index: var(--z-modal);
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .main-content {
+    margin-left: 0;
+    padding: var(--spacing-4);
+  }
+  
+  /* Navbar móvil */
+  .navbar {
+    padding: 0 var(--spacing-4);
+    height: 3.5rem;
+  }
+  
+  .navbar-nav {
+    display: none;
+  }
+  
+  .mobile-menu-toggle {
+    display: block;
+  }
+  
+  /* Cards móvil */
+  .card {
+    margin-bottom: var(--spacing-4);
+  }
+  
+  .card-body {
+    padding: var(--spacing-4);
+  }
+  
+  .bovine-card {
+    margin-bottom: var(--spacing-3);
+  }
+  
+  /* Formularios móvil */
+  .form-group {
+    margin-bottom: var(--spacing-4);
+  }
+  
+  .form-control {
+    font-size: 16px; /* Prevenir zoom en iOS */
+  }
+  
+  /* Botones móvil */
+  .btn {
+    min-height: 44px; /* Touch target mínimo */
+    padding: var(--spacing-3) var(--spacing-4);
+  }
+  
+  .btn-group {
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+  
+  .btn-group .btn {
+    width: 100%;
+  }
+  
+  /* Modales móvil */
+  .modal {
+    margin: var(--spacing-2);
+    max-width: calc(100vw - 1rem);
+    max-height: calc(100vh - 1rem);
+  }
+  
+  .modal-body {
+    padding: var(--spacing-4);
+    max-height: calc(100vh - 10rem);
+    overflow-y: auto;
+  }
+  
+  .modal-footer {
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+  
+  .modal-footer .btn {
+    width: 100%;
+  }
+  
+  /* Tablas móvil */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .table {
+    font-size: var(--font-size-sm);
+  }
+  
+  .table th,
+  .table td {
+    padding: var(--spacing-2) var(--spacing-3);
+  }
+  
+  /* Ocultar columnas menos importantes en móvil */
+  .table .hide-mobile {
+    display: none;
+  }
+  
+  /* Dashboard móvil */
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-4);
+  }
+  
+  .metric-card {
+    padding: var(--spacing-4);
+  }
+  
+  .metric-value {
+    font-size: var(--font-size-2xl);
+  }
+  
+  /* Charts móvil */
+  .chart-container {
+    padding: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
+  }
+  
+  .chart-legend {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-2);
+  }
+  
+  /* Alerts móvil */
+  .alert {
+    padding: var(--spacing-3);
+    font-size: var(--font-size-sm);
+  }
+  
+  /* Navegación de tabs móvil */
+  .tab-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .tab-nav .tab-link {
+    white-space: nowrap;
+    min-width: 120px;
+  }
+}
+
+/* ============== TABLET (640px-1024px) ============== */
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  /* Layout tablet */
+  .sidebar {
+    width: var(--sidebar-width-collapsed);
+  }
+  
+  .sidebar:hover,
+  .sidebar.expanded {
+    width: var(--sidebar-width);
+  }
+  
+  .main-content {
+    margin-left: var(--sidebar-width-collapsed);
+    padding: var(--spacing-6);
+  }
+  
+  /* Grid tablet */
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-6);
+  }
+  
+  .bovine-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-4);
+  }
+  
+  /* Formularios tablet */
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-4);
+  }
+  
+  /* Modales tablet */
+  .modal {
+    max-width: 80vw;
+  }
+  
+  /* Tablas tablet */
+  .table .hide-tablet {
+    display: none;
+  }
+}
+
+/* ============== DESKTOP (1024px+) ============== */
+
+@media (min-width: 1024px) {
+  /* Layout desktop */
+  .sidebar {
+    width: var(--sidebar-width);
+    position: fixed;
+  }
+  
+  .main-content {
+    margin-left: var(--sidebar-width);
+    padding: var(--spacing-8);
+  }
+  
+  /* Grid desktop */
+  .dashboard-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-6);
+  }
+  
+  .bovine-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-6);
+  }
+  
+  /* Formularios desktop */
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-6);
+  }
+  
+  .form-row.two-columns {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  /* Hover effects para desktop */
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+  }
+  
+  .btn:hover {
+    transform: translateY(-1px);
+  }
+  
+  /* Tooltips visibles en desktop */
+  .tooltip {
+    display: block;
+  }
+  
+  /* Navegación desktop */
+  .navbar-nav {
+    display: flex;
+  }
+  
+  .mobile-menu-toggle {
+    display: none;
+  }
+}
+
+/* ============== EXTRA LARGE (1280px+) ============== */
+
+@media (min-width: 1280px) {
+  .main-content {
+    padding: var(--spacing-12);
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+  
+  .bovine-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .form-row {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  /* Métricas más grandes */
+  .metric-value {
+    font-size: var(--font-size-4xl);
+  }
+  
+  /* Cards más espaciosas */
+  .card-body {
+    padding: var(--spacing-8);
+  }
+}
+
+/* ============== ULTRA WIDE (1536px+) ============== */
+
+@media (min-width: 1536px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(8, 1fr);
+  }
+  
+  .bovine-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  
+  .main-content {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: calc(var(--sidebar-width) + var(--spacing-12));
+  }
+}
+
+/* ============== ORIENTACIÓN ============== */
+
+/* Landscape móvil */
+@media (max-width: 1023px) and (orientation: landscape) {
+  .navbar {
+    height: 3rem;
+  }
+  
+  .modal {
+    max-height: 90vh;
+  }
+  
+  .sidebar {
+    width: var(--sidebar-width-collapsed);
+  }
+  
+  .chart-container {
+    height: 300px;
+  }
+}
+
+/* Portrait tablet */
+@media (min-width: 768px) and (max-width: 1023px) and (orientation: portrait) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .bovine-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ============== ALTURA DE VIEWPORT ============== */
+
+/* Dispositivos con altura pequeña */
+@media (max-height: 600px) {
+  .modal {
+    max-height: 95vh;
+  }
+  
+  .modal-body {
+    max-height: calc(95vh - 8rem);
+    padding: var(--spacing-3);
+  }
+  
+  .sidebar {
+    padding-top: var(--spacing-2);
+  }
+  
+  .sidebar-link {
+    padding: var(--spacing-2);
+  }
+}
+
+/* ============== PRINT STYLES ============== */
+
+@media print {
+  /* Ocultar elementos de navegación */
+  .sidebar,
+  .navbar,
+  .mobile-menu-toggle,
+  .btn,
+  .modal,
+  .tooltip,
+  .alert-close {
+    display: none !important;
+  }
+  
+  /* Ajustar layout para impresión */
+  .main-content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Optimizar tipografía para impresión */
+  body {
+    font-size: 12pt;
+    line-height: 1.4;
+    color: #000 !important;
+    background: #fff !important;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    color: #000 !important;
+    page-break-after: avoid;
+  }
+  
+  /* Tablas para impresión */
+  .table {
+    font-size: 10pt;
+  }
+  
+  .table th,
+  .table td {
+    padding: 4pt;
+    border: 1pt solid #000 !important;
+  }
+  
+  /* Cards para impresión */
+  .card {
+    border: 1pt solid #000 !important;
+    box-shadow: none !important;
+    margin-bottom: 12pt;
+    break-inside: avoid;
+  }
+  
+  /* Métricas para impresión */
+  .metric-card {
+    border: 1pt solid #000 !important;
+    text-align: center;
+    padding: 8pt;
+  }
+  
+  .metric-value {
+    font-size: 16pt;
+    font-weight: bold;
+  }
+}
+
+/* ============== CLASES UTILITARIAS RESPONSIVAS ============== */
+
+/* Mostrar/ocultar por breakpoint */
+.show-mobile {
+  display: block;
+}
+
+.hide-mobile {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .show-mobile {
+    display: none;
+  }
+  
+  .hide-mobile {
+    display: block;
+  }
+  
+  .show-tablet {
+    display: block;
+  }
+  
+  .hide-tablet {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .show-tablet {
+    display: none;
+  }
+  
+  .hide-tablet {
+    display: block;
+  }
+  
+  .show-desktop {
+    display: block;
+  }
+  
+  .hide-desktop {
+    display: none;
+  }
+}
+
+/* Grid responsivo */
+.grid-responsive {
+  display: grid;
+  gap: var(--spacing-4);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .grid-responsive {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid-responsive {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Flex responsivo */
+.flex-responsive {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+@media (min-width: 768px) {
+  .flex-responsive {
+    flex-direction: row;
+    gap: var(--spacing-6);
+  }
+}
+
+/* Padding responsivo */
+.p-responsive {
+  padding: var(--spacing-4);
+}
+
+@media (min-width: 640px) {
+  .p-responsive {
+    padding: var(--spacing-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .p-responsive {
+    padding: var(--spacing-8);
+  }
+}
+
+/* Texto responsivo */
+.text-responsive {
+  font-size: var(--font-size-sm);
+}
+
+@media (min-width: 640px) {
+  .text-responsive {
+    font-size: var(--font-size-base);
+  }
+}
+
+@media (min-width: 1024px) {
+  .text-responsive {
+    font-size: var(--font-size-lg);
+  }
+}
+
+/* ============== HIGH DPI / RETINA ============== */
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Mejorar renderizado para pantallas de alta densidad */
+  .card,
+  .btn,
+  .form-control {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Iconos más nítidos */
+  .icon {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* ============== CARACTERÍSTICAS ESPECÍFICAS DE DISPOSITIVOS ============== */
+
+/* iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  .form-control {
+    font-size: 16px; /* Prevenir zoom automático */
+  }
+  
+  .btn {
+    -webkit-appearance: none;
+    border-radius: var(--radius-md);
+  }
+}
+
+/* Android Chrome */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .form-control:focus {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* ============== HOVER CAPABILITY ============== */
+
+/* Solo aplicar hover en dispositivos que lo soporten */
+@media (hover: hover) {
+  .hover\:scale-105:hover {
+    transform: scale(1.05);
+  }
+  
+  .hover\:shadow-lg:hover {
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .hover\:opacity-80:hover {
+    opacity: 0.8;
+  }
+}
+
+/* ============== MOTION PREFERENCES ============== */
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-grid,
+  .bovine-grid,
+  .grid-responsive {
+    animation: none;
+  }
+  
+  .card:hover,
+  .btn:hover {
+    transform: none;
+  }
+}

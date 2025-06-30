@@ -1,1 +1,714 @@
-// Placeholder content for globals.css
+/**
+ * Estilos Globales - Sistema de gestión de bovinos
+ * Estilos base, reset y configuraciones globales del sistema
+ */
+
+/* ============== IMPORTS ============== */
+
+/* Importar variables CSS */
+@import './variables.css';
+
+/* Importar animaciones CSS */
+@import './animations.css';
+
+/* Importar fuentes de Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+/* ============== RESET Y NORMALIZACIÓN ============== */
+
+/* Reset básico moderno */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Reset de listas */
+ul,
+ol {
+  list-style: none;
+}
+
+/* Reset de enlaces */
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+/* Reset de botones */
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+/* Reset de inputs */
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* Reset de imágenes */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Reset de formularios */
+fieldset {
+  border: none;
+}
+
+/* ============== CONFIGURACIÓN BASE DEL HTML ============== */
+
+html {
+  /* Configuración de fuente base */
+  font-size: 16px;
+  line-height: 1.5;
+  
+  /* Mejoras de renderizado */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  
+  /* Scroll suave */
+  scroll-behavior: smooth;
+  
+  /* Color scheme support */
+  color-scheme: light dark;
+}
+
+/* ============== CONFIGURACIÓN DEL BODY ============== */
+
+body {
+  /* Tipografía */
+  font-family: var(--font-family-sans);
+  font-weight: var(--font-weight-normal);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  
+  /* Colores */
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  
+  /* Mejoras de renderizado */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  /* Prevenir overflow horizontal */
+  overflow-x: hidden;
+  
+  /* Configuración de scroll */
+  scroll-behavior: smooth;
+}
+
+/* ============== TIPOGRAFÍA GLOBAL ============== */
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-4);
+}
+
+h1 {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+}
+
+h2 {
+  font-size: var(--font-size-3xl);
+}
+
+h3 {
+  font-size: var(--font-size-2xl);
+}
+
+h4 {
+  font-size: var(--font-size-xl);
+}
+
+h5 {
+  font-size: var(--font-size-lg);
+}
+
+h6 {
+  font-size: var(--font-size-base);
+}
+
+/* Párrafos */
+p {
+  margin-bottom: var(--spacing-4);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+}
+
+/* Enlaces */
+a {
+  color: var(--text-link);
+  transition: var(--transition-colors);
+  cursor: pointer;
+}
+
+a:hover {
+  color: var(--text-link-hover);
+  text-decoration: underline;
+}
+
+a:focus {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Texto enfatizado */
+strong, b {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+em, i {
+  font-style: italic;
+}
+
+/* Texto pequeño */
+small {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+}
+
+/* Código */
+code {
+  font-family: var(--font-family-mono);
+  font-size: 0.875em;
+  background-color: var(--bg-tertiary);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+}
+
+pre {
+  font-family: var(--font-family-mono);
+  background-color: var(--bg-tertiary);
+  padding: var(--spacing-4);
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+  line-height: var(--line-height-relaxed);
+}
+
+pre code {
+  background: none;
+  padding: 0;
+}
+
+/* Citas */
+blockquote {
+  border-left: 4px solid var(--border-primary);
+  padding-left: var(--spacing-4);
+  margin: var(--spacing-6) 0;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+/* ============== ELEMENTOS DE FORMULARIO ============== */
+
+/* Configuración base para inputs */
+input,
+textarea,
+select {
+  width: 100%;
+  padding: var(--input-padding-y) var(--input-padding-x);
+  border: var(--input-border-width) solid var(--border-primary);
+  border-radius: var(--input-border-radius);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: var(--transition-colors), var(--transition-shadow);
+  font-size: var(--font-size-base);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+input:disabled,
+textarea:disabled,
+select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--bg-tertiary);
+}
+
+/* Placeholder */
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* Labels */
+label {
+  display: block;
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-2);
+  font-size: var(--font-size-sm);
+}
+
+/* Fieldsets */
+fieldset {
+  border: var(--border-width-1) solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+}
+
+legend {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  padding: 0 var(--spacing-2);
+}
+
+/* ============== BOTONES GLOBALES ============== */
+
+button {
+  cursor: pointer;
+  transition: var(--transition-all);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button:focus {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* ============== TABLAS ============== */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--spacing-6);
+}
+
+th,
+td {
+  padding: var(--spacing-3) var(--spacing-4);
+  text-align: left;
+  border-bottom: var(--border-width-1) solid var(--border-primary);
+}
+
+th {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
+}
+
+td {
+  color: var(--text-secondary);
+}
+
+tr:hover {
+  background-color: var(--bg-secondary);
+}
+
+/* ============== LISTAS ============== */
+
+ul,
+ol {
+  margin-bottom: var(--spacing-4);
+  padding-left: var(--spacing-6);
+}
+
+ul {
+  list-style-type: disc;
+}
+
+ol {
+  list-style-type: decimal;
+}
+
+li {
+  margin-bottom: var(--spacing-2);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+}
+
+/* ============== DIVISORES ============== */
+
+hr {
+  border: none;
+  border-top: var(--border-width-1) solid var(--border-primary);
+  margin: var(--spacing-8) 0;
+}
+
+/* ============== ELEMENTOS MULTIMEDIA ============== */
+
+img {
+  height: auto;
+  border-radius: var(--radius-md);
+}
+
+video {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-lg);
+}
+
+/* ============== CLASES UTILITARIAS GLOBALES ============== */
+
+/* Visibilidad */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.not-sr-only {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Layout */
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--spacing-4);
+  max-width: var(--container-xl);
+}
+
+.flex {
+  display: flex;
+}
+
+.grid {
+  display: grid;
+}
+
+.hidden {
+  display: none;
+}
+
+.block {
+  display: block;
+}
+
+.inline {
+  display: inline;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+/* Posicionamiento */
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.fixed {
+  position: fixed;
+}
+
+.sticky {
+  position: sticky;
+}
+
+/* Tamaños */
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.min-h-screen {
+  min-height: 100vh;
+}
+
+/* ============== CLASES ESPECÍFICAS DEL SISTEMA GANADERO ============== */
+
+/* Estados de salud */
+.health-excellent {
+  color: var(--health-excellent);
+}
+
+.health-good {
+  color: var(--health-good);
+}
+
+.health-fair {
+  color: var(--health-fair);
+}
+
+.health-poor {
+  color: var(--health-poor);
+}
+
+.health-critical {
+  color: var(--health-critical);
+}
+
+/* Estados de producción */
+.production-high {
+  color: var(--production-high);
+}
+
+.production-medium {
+  color: var(--production-medium);
+}
+
+.production-low {
+  color: var(--production-low);
+}
+
+/* Categorías de bovinos */
+.cattle-dairy {
+  color: var(--cattle-dairy);
+}
+
+.cattle-beef {
+  color: var(--cattle-beef);
+}
+
+.cattle-mixed {
+  color: var(--cattle-mixed);
+}
+
+/* ============== CONFIGURACIÓN PARA IMPRESIÓN ============== */
+
+@media print {
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  a,
+  a:visited {
+    text-decoration: underline;
+  }
+  
+  abbr[title]:after {
+    content: " (" attr(title) ")";
+  }
+  
+  pre,
+  blockquote {
+    border: 1px solid #999;
+    page-break-inside: avoid;
+  }
+  
+  thead {
+    display: table-header-group;
+  }
+  
+  tr,
+  img {
+    page-break-inside: avoid;
+  }
+  
+  img {
+    max-width: 100% !important;
+  }
+  
+  p,
+  h2,
+  h3 {
+    orphans: 3;
+    widows: 3;
+  }
+  
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* ============== CONFIGURACIÓN PARA MOTION REDUCIDO ============== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============== CONFIGURACIÓN PARA ALTO CONTRASTE ============== */
+
+@media (prefers-contrast: high) {
+  :root {
+    --border-width-1: 2px;
+    --text-secondary: var(--text-primary);
+    --text-tertiary: var(--text-primary);
+  }
+}
+
+/* ============== SCROLL PERSONALIZADO ============== */
+
+/* Webkit scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-secondary);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-primary) var(--bg-secondary);
+}
+
+/* ============== SELECCIÓN DE TEXTO ============== */
+
+::selection {
+  background-color: var(--color-blue-200);
+  color: var(--color-blue-900);
+}
+
+::-moz-selection {
+  background-color: var(--color-blue-200);
+  color: var(--color-blue-900);
+}
+
+/* ============== CONFIGURACIÓN PARA TOUCH DEVICES ============== */
+
+@media (hover: none) and (pointer: coarse) {
+  /* Aumentar área de touch para elementos interactivos */
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Remover hover effects en dispositivos touch */
+  a:hover,
+  button:hover {
+    text-decoration: none;
+  }
+}
+
+/* ============== LOADING STATES GLOBALES ============== */
+
+.loading {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid var(--border-primary);
+  border-top-color: var(--color-blue-600);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ============== ERROR STATES GLOBALES ============== */
+
+.error {
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.error-message {
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-1);
+}
+
+/* ============== SUCCESS STATES GLOBALES ============== */
+
+.success {
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.success-message {
+  color: var(--color-success);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-1);
+}
+
+/* ============== WARNING STATES GLOBALES ============== */
+
+.warning {
+  color: var(--color-warning);
+  border-color: var(--color-warning);
+}
+
+.warning-message {
+  color: var(--color-warning);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-1);
+}

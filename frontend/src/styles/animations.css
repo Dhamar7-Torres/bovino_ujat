@@ -1,1 +1,632 @@
-// Placeholder content for animations.css
+/**
+ * Animaciones CSS - Sistema de gestión de bovinos
+ * Animaciones optimizadas para complementar Framer Motion y React Bits
+ */
+
+/* ============== VARIABLES DE ANIMACIÓN ============== */
+:root {
+  /* Duraciones */
+  --animation-speed-fast: 0.15s;
+  --animation-speed-normal: 0.3s;
+  --animation-speed-slow: 0.5s;
+  --animation-speed-very-slow: 0.8s;
+  
+  /* Easing functions */
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-elastic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  /* Delays */
+  --animation-delay-short: 0.1s;
+  --animation-delay-medium: 0.2s;
+  --animation-delay-long: 0.4s;
+}
+
+/* ============== ANIMACIONES DE FADE ============== */
+
+/* Fade In básico */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Fade In desde arriba */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade In desde abajo */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade In desde la izquierda */
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Fade In desde la derecha */
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ============== ANIMACIONES DE ESCALA ============== */
+
+/* Scale In básico */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Scale In con bounce */
+@keyframes scaleInBounce {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Scale Out */
+@keyframes scaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+/* ============== ANIMACIONES DE ROTACIÓN ============== */
+
+/* Rotate In */
+@keyframes rotateIn {
+  from {
+    opacity: 0;
+    transform: rotate(-180deg) scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+/* Spin continuo */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Wobble */
+@keyframes wobble {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  15% {
+    transform: rotate(-5deg);
+  }
+  30% {
+    transform: rotate(4deg);
+  }
+  45% {
+    transform: rotate(-3deg);
+  }
+  60% {
+    transform: rotate(2deg);
+  }
+  75% {
+    transform: rotate(-1deg);
+  }
+}
+
+/* ============== ANIMACIONES DE SLIDE ============== */
+
+/* Slide In desde arriba */
+@keyframes slideInFromTop {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Slide In desde abajo */
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Slide In desde la izquierda */
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Slide In desde la derecha */
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ============== ANIMACIONES DE LOADING ============== */
+
+/* Pulse básico */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Pulse de escala */
+@keyframes pulseScale {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Bounce */
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40%, 43% {
+    transform: translateY(-15px);
+  }
+  70% {
+    transform: translateY(-7px);
+  }
+  90% {
+    transform: translateY(-3px);
+  }
+}
+
+/* Loading dots */
+@keyframes loadingDots {
+  0%, 80%, 100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============== ANIMACIONES ESPECÍFICAS DEL SISTEMA GANADERO ============== */
+
+/* Animación para tarjetas de bovinos */
+@keyframes bovineCardHover {
+  0% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  100% {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(59, 130, 246, 0.15);
+  }
+}
+
+/* Animación para alertas de salud */
+@keyframes healthAlert {
+  0% {
+    transform: scale(1);
+    background-color: var(--color-red-100);
+  }
+  50% {
+    transform: scale(1.05);
+    background-color: var(--color-red-200);
+  }
+  100% {
+    transform: scale(1);
+    background-color: var(--color-red-100);
+  }
+}
+
+/* Animación para métricas del dashboard */
+@keyframes metricCounter {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Animación para marcadores del mapa */
+@keyframes mapMarkerBounce {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.1);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Animación para notificaciones */
+@keyframes notificationSlide {
+  0% {
+    transform: translateX(100%) scale(0.8);
+    opacity: 0;
+  }
+  10% {
+    transform: translateX(0) scale(1.05);
+    opacity: 1;
+  }
+  20% {
+    transform: scale(1);
+  }
+  90% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%) scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* ============== ANIMACIONES DE EFECTO DE TEXTO ============== */
+
+/* Efecto de typewriter */
+@keyframes typewriter {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* Cursor parpadeante */
+@keyframes blinkCursor {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+/* Efecto de brillo (shimmer) */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* Efecto de glitch */
+@keyframes glitch {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-2px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(2px);
+  }
+}
+
+/* ============== ANIMACIONES DE MICRO-INTERACCIONES ============== */
+
+/* Hover suave para botones */
+@keyframes buttonHover {
+  0% {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  100% {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Click feedback */
+@keyframes buttonClick {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Focus ring */
+@keyframes focusRing {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0);
+  }
+}
+
+/* ============== ANIMACIONES DE ESTADO DE CARGA ============== */
+
+/* Skeleton loading */
+@keyframes skeleton {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+/* Progress bar */
+@keyframes progressBar {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+/* Loading spinner */
+@keyframes loadingSpinner {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============== CLASES DE ANIMACIÓN UTILITARIAS ============== */
+
+/* Fade animations */
+.animate-fade-in {
+  animation: fadeIn var(--animation-speed-normal) var(--ease-out) forwards;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp var(--animation-speed-normal) var(--ease-out) forwards;
+}
+
+.animate-fade-in-down {
+  animation: fadeInDown var(--animation-speed-normal) var(--ease-out) forwards;
+}
+
+.animate-fade-in-left {
+  animation: fadeInLeft var(--animation-speed-normal) var(--ease-out) forwards;
+}
+
+.animate-fade-in-right {
+  animation: fadeInRight var(--animation-speed-normal) var(--ease-out) forwards;
+}
+
+/* Scale animations */
+.animate-scale-in {
+  animation: scaleIn var(--animation-speed-normal) var(--ease-out) forwards;
+}
+
+.animate-scale-in-bounce {
+  animation: scaleInBounce var(--animation-speed-slow) var(--ease-bounce) forwards;
+}
+
+/* Rotate animations */
+.animate-rotate-in {
+  animation: rotateIn var(--animation-speed-slow) var(--ease-out) forwards;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-wobble {
+  animation: wobble 1s var(--ease-in-out);
+}
+
+/* Loading animations */
+.animate-pulse {
+  animation: pulse 2s var(--ease-in-out) infinite;
+}
+
+.animate-pulse-scale {
+  animation: pulseScale 2s var(--ease-in-out) infinite;
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+/* Sistema ganadero específicas */
+.animate-bovine-card-hover {
+  animation: bovineCardHover var(--animation-speed-normal) var(--ease-out) forwards;
+}
+
+.animate-health-alert {
+  animation: healthAlert 2s var(--ease-in-out) infinite;
+}
+
+.animate-metric-counter {
+  animation: metricCounter var(--animation-speed-slow) var(--ease-bounce) forwards;
+}
+
+.animate-map-marker-bounce {
+  animation: mapMarkerBounce 1s var(--ease-bounce) infinite;
+}
+
+.animate-notification-slide {
+  animation: notificationSlide 4s var(--ease-in-out) forwards;
+}
+
+/* Texto animado */
+.animate-typewriter {
+  animation: typewriter 3s steps(30) forwards;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 2px solid;
+}
+
+.animate-blink-cursor {
+  animation: blinkCursor 1s step-end infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.animate-glitch {
+  animation: glitch 0.3s infinite;
+}
+
+/* Micro-interacciones */
+.animate-button-hover {
+  animation: buttonHover var(--animation-speed-fast) var(--ease-out) forwards;
+}
+
+.animate-button-click {
+  animation: buttonClick var(--animation-speed-fast) var(--ease-out);
+}
+
+.animate-focus-ring {
+  animation: focusRing 0.6s var(--ease-out);
+}
+
+/* Loading states */
+.animate-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: skeleton 1.5s infinite;
+}
+
+.animate-progress-bar {
+  animation: progressBar 2s var(--ease-out) forwards;
+}
+
+.animate-loading-spinner {
+  animation: loadingSpinner 1s linear infinite;
+}
+
+/* ============== DELAYS Y VARIACIONES ============== */
+
+/* Delays escalonados para animaciones en grupo */
+.animate-delay-1 { animation-delay: 0.1s; }
+.animate-delay-2 { animation-delay: 0.2s; }
+.animate-delay-3 { animation-delay: 0.3s; }
+.animate-delay-4 { animation-delay: 0.4s; }
+.animate-delay-5 { animation-delay: 0.5s; }
+
+/* Duraciones alternativas */
+.animate-fast { animation-duration: var(--animation-speed-fast) !important; }
+.animate-normal { animation-duration: var(--animation-speed-normal) !important; }
+.animate-slow { animation-duration: var(--animation-speed-slow) !important; }
+.animate-very-slow { animation-duration: var(--animation-speed-very-slow) !important; }
+
+/* ============== SOPORTE PARA PREFERENCIAS DE MOVIMIENTO REDUCIDO ============== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Mantener solo las animaciones esenciales */
+  .animate-loading-spinner,
+  .animate-progress-bar {
+    animation-duration: 1s !important;
+  }
+}
