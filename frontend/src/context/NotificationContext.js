@@ -1,153 +1,131 @@
-import React, { createContext, useContext, useReducer, useEffect, useCallback, useRef } from 'react';
-import { useAuth } from './AuthContext';
-import { notificationService } from '../services/notificationService';
-
 /**
- * Contexto de notificaciones para el sistema de gestión de bovinos
- * Maneja notificaciones en tiempo real, alertas, toast y configuración
+ * NotificationContext.js - Contexto para manejo de notificaciones
  */
 
-// Estado inicial del contexto de notificaciones
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import toast from 'react-hot-toast';
+
+// Estado inicial de notificaciones
 const initialState = {
-  // Notificaciones
   notifications: [],
   unreadCount: 0,
-  loading: false,
-  
-  // Toast notifications (notificaciones temporales)
-  toasts: [],
-  toastIdCounter: 0,
-  
-  // Configuración de notificaciones
+  isLoading: false,
+  error: null,
   settings: {
-    desktop: true,
+    enabled: true,
     sound: true,
-    email: true,
-    push: true,
+    browser: true,
+    email: false,
+    push: false,
     doNotDisturb: false,
     doNotDisturbStart: '22:00',
-    doNotDisturbEnd: '07:00',
-    autoMarkAsRead: false,
-    maxToastDisplay: 5,
-    toastDuration: 5000
+    doNotDisturbEnd: '08:00'
   },
-  
-  // Estado de conexión WebSocket
-  websocket: {
-    connected: false,
-    reconnecting: false,
-    lastMessage: null
-  },
-  
-  // Filtros de notificaciones
   filters: {
-    category: '',
-    type: '',
-    priority: '',
-    unreadOnly: false
-  },
-  
-  // Paginación
-  pagination: {
-    page: 1,
-    limit: 20,
-    total: 0,
-    hasMore: true
+    types: ['all'],
+    priority: ['all'],
+    read: 'all'
   }
 };
 
-// Tipos de acciones para el reducer
+// Acciones del reducer
 const NOTIFICATION_ACTIONS = {
-  // Cargar notificaciones
   LOAD_NOTIFICATIONS_START: 'LOAD_NOTIFICATIONS_START',
   LOAD_NOTIFICATIONS_SUCCESS: 'LOAD_NOTIFICATIONS_SUCCESS',
   LOAD_NOTIFICATIONS_FAILURE: 'LOAD_NOTIFICATIONS_FAILURE',
-  
-  // Agregar nueva notificación
   ADD_NOTIFICATION: 'ADD_NOTIFICATION',
-  
-  // Marcar como leída
-  MARK_AS_READ: 'MARK_AS_READ',
-  MARK_ALL_AS_READ: 'MARK_ALL_AS_READ',
-  
-  // Eliminar notificación
+  UPDATE_NOTIFICATION: 'UPDATE_NOTIFICATION',
   REMOVE_NOTIFICATION: 'REMOVE_NOTIFICATION',
-  
-  // Toast notifications
-  ADD_TOAST: 'ADD_TOAST',
-  REMOVE_TOAST: 'REMOVE_TOAST',
-  CLEAR_ALL_TOASTS: 'CLEAR_ALL_TOASTS',
-  
-  // Configuración
+  MARK_AS_READ: 'MARK_AS_READ',
+  MARK_AS_UNREAD: 'MARK_AS_UNREAD',
+  MARK_ALL_AS_READ: 'MARK_ALL_AS_READ',
+  CLEAR_ALL: 'CLEAR_ALL',
   UPDATE_SETTINGS: 'UPDATE_SETTINGS',
-  
-  // WebSocket
-  WEBSOCKET_CONNECTED: 'WEBSOCKET_CONNECTED',
-  WEBSOCKET_DISCONNECTED: 'WEBSOCKET_DISCONNECTED',
-  WEBSOCKET_RECONNECTING: 'WEBSOCKET_RECONNECTING',
-  WEBSOCKET_MESSAGE: 'WEBSOCKET_MESSAGE',
-  
-  // Filtros
   UPDATE_FILTERS: 'UPDATE_FILTERS',
-  
-  // Paginación
-  UPDATE_PAGINATION: 'UPDATE_PAGINATION',
-  
-  // Limpiar estado
-  CLEAR_NOTIFICATIONS: 'CLEAR_NOTIFICATIONS'
+  SET_ERROR: 'SET_ERROR',
+  CLEAR_ERROR: 'CLEAR_ERROR'
 };
 
-/**
- * Reducer para manejar las acciones del estado de notificaciones
- * @param {Object} state - Estado actual
- * @param {Object} action - Acción a ejecutar
- */
+// Reducer de notificaciones
 const notificationReducer = (state, action) => {
   switch (action.type) {
     case NOTIFICATION_ACTIONS.LOAD_NOTIFICATIONS_START:
       return {
         ...state,
-        loading: true
+        isLoading: true,
+        error: null
       };
 
     case NOTIFICATION_ACTIONS.LOAD_NOTIFICATIONS_SUCCESS:
       return {
         ...state,
-        loading: false,
-        notifications: action.payload.append 
-          ? [...state.notifications, ...action.payload.notifications]
-          : action.payload.notifications,
+        isLoading: false,
+        notifications: action.payload.notifications,
         unreadCount: action.payload.unreadCount,
-        pagination: {
-          ...state.pagination,
-          page: action.payload.page,
-          total: action.payload.total,
-          hasMore: action.payload.hasMore
-        }
+        error: null
       };
 
     case NOTIFICATION_ACTIONS.LOAD_NOTIFICATIONS_FAILURE:
       return {
         ...state,
-        loading: false
+        isLoading: false,
+        error: action.payload
       };
 
     case NOTIFICATION_ACTIONS.ADD_NOTIFICATION:
+      const newNotification = {
+        ...action.payload,
+        id: action.payload.id || Date.now().toString(),
+        timestamp: action.payload.timestamp || new Date().toISOString(),
+        read: false
+      };
+
       return {
         ...state,
-        notifications: [action.payload, ...state.notifications],
-        unreadCount: state.unreadCount + (action.payload.estado === 'no_leida' ? 1 : 0)
+        notifications: [newNotification, ...state.notifications],
+        unreadCount: state.unreadCount + 1
+      };
+
+    case NOTIFICATION_ACTIONS.UPDATE_NOTIFICATION:
+      return {
+        ...state,
+        notifications: state.notifications.map(notification =>
+          notification.id === action.payload.id
+            ? { ...notification, ...action.payload.updates }
+            : notification
+        )
+      };
+
+    case NOTIFICATION_ACTIONS.REMOVE_NOTIFICATION:
+      const removedNotification = state.notifications.find(n => n.id === action.payload);
+      const wasUnread = removedNotification && !removedNotification.read;
+
+      return {
+        ...state,
+        notifications: state.notifications.filter(n => n.id !== action.payload),
+        unreadCount: wasUnread ? state.unreadCount - 1 : state.unreadCount
       };
 
     case NOTIFICATION_ACTIONS.MARK_AS_READ:
       return {
         ...state,
         notifications: state.notifications.map(notification =>
-          notification.id === action.payload.id
-            ? { ...notification, estado: 'leida', fecha_lectura: new Date().toISOString() }
+          notification.id === action.payload
+            ? { ...notification, read: true }
             : notification
         ),
         unreadCount: Math.max(0, state.unreadCount - 1)
+      };
+
+    case NOTIFICATION_ACTIONS.MARK_AS_UNREAD:
+      return {
+        ...state,
+        notifications: state.notifications.map(notification =>
+          notification.id === action.payload
+            ? { ...notification, read: false }
+            : notification
+        ),
+        unreadCount: state.unreadCount + 1
       };
 
     case NOTIFICATION_ACTIONS.MARK_ALL_AS_READ:
@@ -155,116 +133,40 @@ const notificationReducer = (state, action) => {
         ...state,
         notifications: state.notifications.map(notification => ({
           ...notification,
-          estado: 'leida',
-          fecha_lectura: notification.estado === 'no_leida' ? new Date().toISOString() : notification.fecha_lectura
+          read: true
         })),
         unreadCount: 0
       };
 
-    case NOTIFICATION_ACTIONS.REMOVE_NOTIFICATION:
-      const removedNotification = state.notifications.find(n => n.id === action.payload.id);
+    case NOTIFICATION_ACTIONS.CLEAR_ALL:
       return {
         ...state,
-        notifications: state.notifications.filter(n => n.id !== action.payload.id),
-        unreadCount: removedNotification?.estado === 'no_leida' 
-          ? Math.max(0, state.unreadCount - 1) 
-          : state.unreadCount
-      };
-
-    case NOTIFICATION_ACTIONS.ADD_TOAST:
-      const newToast = {
-        ...action.payload,
-        id: state.toastIdCounter + 1,
-        timestamp: Date.now()
-      };
-      
-      return {
-        ...state,
-        toasts: [newToast, ...state.toasts.slice(0, state.settings.maxToastDisplay - 1)],
-        toastIdCounter: state.toastIdCounter + 1
-      };
-
-    case NOTIFICATION_ACTIONS.REMOVE_TOAST:
-      return {
-        ...state,
-        toasts: state.toasts.filter(toast => toast.id !== action.payload.id)
-      };
-
-    case NOTIFICATION_ACTIONS.CLEAR_ALL_TOASTS:
-      return {
-        ...state,
-        toasts: []
+        notifications: [],
+        unreadCount: 0
       };
 
     case NOTIFICATION_ACTIONS.UPDATE_SETTINGS:
       return {
         ...state,
-        settings: {
-          ...state.settings,
-          ...action.payload
-        }
-      };
-
-    case NOTIFICATION_ACTIONS.WEBSOCKET_CONNECTED:
-      return {
-        ...state,
-        websocket: {
-          ...state.websocket,
-          connected: true,
-          reconnecting: false
-        }
-      };
-
-    case NOTIFICATION_ACTIONS.WEBSOCKET_DISCONNECTED:
-      return {
-        ...state,
-        websocket: {
-          ...state.websocket,
-          connected: false,
-          reconnecting: false
-        }
-      };
-
-    case NOTIFICATION_ACTIONS.WEBSOCKET_RECONNECTING:
-      return {
-        ...state,
-        websocket: {
-          ...state.websocket,
-          reconnecting: true
-        }
-      };
-
-    case NOTIFICATION_ACTIONS.WEBSOCKET_MESSAGE:
-      return {
-        ...state,
-        websocket: {
-          ...state.websocket,
-          lastMessage: action.payload
-        }
+        settings: { ...state.settings, ...action.payload }
       };
 
     case NOTIFICATION_ACTIONS.UPDATE_FILTERS:
       return {
         ...state,
-        filters: {
-          ...state.filters,
-          ...action.payload
-        }
+        filters: { ...state.filters, ...action.payload }
       };
 
-    case NOTIFICATION_ACTIONS.UPDATE_PAGINATION:
+    case NOTIFICATION_ACTIONS.SET_ERROR:
       return {
         ...state,
-        pagination: {
-          ...state.pagination,
-          ...action.payload
-        }
+        error: action.payload
       };
 
-    case NOTIFICATION_ACTIONS.CLEAR_NOTIFICATIONS:
+    case NOTIFICATION_ACTIONS.CLEAR_ERROR:
       return {
-        ...initialState,
-        settings: state.settings
+        ...state,
+        error: null
       };
 
     default:
@@ -272,221 +174,100 @@ const notificationReducer = (state, action) => {
   }
 };
 
-// Crear el contexto de notificaciones
-const NotificationContext = createContext(undefined);
+// Crear el contexto
+const NotificationContext = createContext();
 
-/**
- * Proveedor del contexto de notificaciones
- * @param {Object} props - Props del componente
- */
+// Proveedor del contexto
 export const NotificationProvider = ({ children }) => {
   const [state, dispatch] = useReducer(notificationReducer, initialState);
-  const { user, isAuthenticated } = useAuth();
-  const wsRef = useRef(null);
-  const reconnectTimeoutRef = useRef(null);
-  const toastTimeoutsRef = useRef(new Map());
 
-  /**
-   * Cargar notificaciones del servidor
-   * @param {boolean} append - Si agregar a las existentes o reemplazar
-   */
-  const loadNotifications = useCallback(async (append = false) => {
-    try {
-      dispatch({ type: NOTIFICATION_ACTIONS.LOAD_NOTIFICATIONS_START });
+  // Cargar configuración inicial
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        dispatch({ type: NOTIFICATION_ACTIONS.LOAD_NOTIFICATIONS_START });
 
-      const params = {
-        page: append ? state.pagination.page + 1 : 1,
-        limit: state.pagination.limit,
-        ...state.filters
-      };
+        // Cargar configuración guardada
+        const savedSettings = localStorage.getItem('notificationSettings');
+        if (savedSettings) {
+          const settings = JSON.parse(savedSettings);
+          dispatch({
+            type: NOTIFICATION_ACTIONS.UPDATE_SETTINGS,
+            payload: settings
+          });
+        }
 
-      const response = await notificationService.getNotifications(params);
+        // Cargar notificaciones mock
+        const mockNotifications = [
+          {
+            id: '1',
+            type: 'health',
+            title: 'Vacunación Pendiente',
+            message: '5 bovinos requieren vacunación hoy',
+            priority: 'high',
+            timestamp: new Date().toISOString(),
+            read: false,
+            category: 'health',
+            actionUrl: '/health/vaccines'
+          },
+          {
+            id: '2',
+            type: 'production',
+            title: 'Meta de Producción Alcanzada',
+            message: 'Producción lechera del día superó la meta',
+            priority: 'medium',
+            timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+            read: false,
+            category: 'production',
+            actionUrl: '/production'
+          },
+          {
+            id: '3',
+            type: 'system',
+            title: 'Backup Completado',
+            message: 'Copia de seguridad realizada exitosamente',
+            priority: 'low',
+            timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+            read: true,
+            category: 'system',
+            actionUrl: null
+          }
+        ];
 
-      if (response.success) {
         dispatch({
           type: NOTIFICATION_ACTIONS.LOAD_NOTIFICATIONS_SUCCESS,
           payload: {
-            notifications: response.data,
-            unreadCount: response.unread_count,
-            page: response.page,
-            total: response.total,
-            hasMore: response.page < response.totalPages,
-            append
+            notifications: mockNotifications,
+            unreadCount: mockNotifications.filter(n => !n.read).length
           }
         });
-      } else {
-        dispatch({ type: NOTIFICATION_ACTIONS.LOAD_NOTIFICATIONS_FAILURE });
-      }
-    } catch (error) {
-      console.error('Error al cargar notificaciones:', error);
-      dispatch({ type: NOTIFICATION_ACTIONS.LOAD_NOTIFICATIONS_FAILURE });
-    }
-  }, [state.pagination, state.filters]);
-
-  /**
-   * Marcar notificación como leída
-   * @param {string} notificationId - ID de la notificación
-   */
-  const markAsRead = useCallback(async (notificationId) => {
-    try {
-      const response = await notificationService.markAsRead(notificationId);
-      
-      if (response.success) {
+      } catch (error) {
         dispatch({
-          type: NOTIFICATION_ACTIONS.MARK_AS_READ,
-          payload: { id: notificationId }
+          type: NOTIFICATION_ACTIONS.LOAD_NOTIFICATIONS_FAILURE,
+          payload: error.message
         });
       }
-    } catch (error) {
-      console.error('Error al marcar como leída:', error);
-    }
-  }, []);
-
-  /**
-   * Marcar todas las notificaciones como leídas
-   */
-  const markAllAsRead = useCallback(async () => {
-    try {
-      const response = await notificationService.markAllAsRead(state.filters);
-      
-      if (response.success) {
-        dispatch({ type: NOTIFICATION_ACTIONS.MARK_ALL_AS_READ });
-      }
-    } catch (error) {
-      console.error('Error al marcar todas como leídas:', error);
-    }
-  }, [state.filters]);
-
-  /**
-   * Eliminar notificación
-   * @param {string} notificationId - ID de la notificación
-   */
-  const removeNotification = useCallback(async (notificationId) => {
-    try {
-      const response = await notificationService.deleteNotification(notificationId);
-      
-      if (response.success) {
-        dispatch({
-          type: NOTIFICATION_ACTIONS.REMOVE_NOTIFICATION,
-          payload: { id: notificationId }
-        });
-      }
-    } catch (error) {
-      console.error('Error al eliminar notificación:', error);
-    }
-  }, []);
-
-  /**
-   * Mostrar toast notification
-   * @param {Object} toast - Datos del toast
-   */
-  const showToast = useCallback((toast) => {
-    const {
-      type = 'info', // success, error, warning, info
-      title = '',
-      message = '',
-      duration = state.settings.toastDuration,
-      action = null,
-      persistent = false,
-      sound = state.settings.sound
-    } = toast;
-
-    // Verificar modo no molestar
-    if (state.settings.doNotDisturb && !isInDoNotDisturbHours()) {
-      return;
-    }
-
-    const toastData = {
-      type,
-      title,
-      message,
-      action,
-      persistent
     };
 
-    dispatch({
-      type: NOTIFICATION_ACTIONS.ADD_TOAST,
-      payload: toastData
-    });
-
-    // Reproducir sonido si está habilitado
-    if (sound && state.settings.sound) {
-      playNotificationSound(type);
-    }
-
-    // Auto-remover si no es persistente
-    if (!persistent && duration > 0) {
-      const timeoutId = setTimeout(() => {
-        removeToast(state.toastIdCounter + 1);
-      }, duration);
-
-      toastTimeoutsRef.current.set(state.toastIdCounter + 1, timeoutId);
-    }
-  }, [state.settings, state.toastIdCounter]);
-
-  /**
-   * Remover toast notification
-   * @param {number} toastId - ID del toast
-   */
-  const removeToast = useCallback((toastId) => {
-    dispatch({
-      type: NOTIFICATION_ACTIONS.REMOVE_TOAST,
-      payload: { id: toastId }
-    });
-
-    // Limpiar timeout si existe
-    const timeoutId = toastTimeoutsRef.current.get(toastId);
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      toastTimeoutsRef.current.delete(toastId);
-    }
+    loadInitialData();
   }, []);
 
-  /**
-   * Limpiar todos los toasts
-   */
-  const clearAllToasts = useCallback(() => {
-    dispatch({ type: NOTIFICATION_ACTIONS.CLEAR_ALL_TOASTS });
-    
-    // Limpiar todos los timeouts
-    toastTimeoutsRef.current.forEach(timeoutId => clearTimeout(timeoutId));
-    toastTimeoutsRef.current.clear();
-  }, []);
+  // Guardar configuración cuando cambie
+  useEffect(() => {
+    localStorage.setItem('notificationSettings', JSON.stringify(state.settings));
+  }, [state.settings]);
 
-  /**
-   * Actualizar configuración de notificaciones
-   * @param {Object} newSettings - Nueva configuración
-   */
-  const updateSettings = useCallback(async (newSettings) => {
-    try {
-      const response = await notificationService.updateNotificationSettings(newSettings);
-      
-      if (response.success) {
-        dispatch({
-          type: NOTIFICATION_ACTIONS.UPDATE_SETTINGS,
-          payload: newSettings
-        });
-      }
-    } catch (error) {
-      console.error('Error al actualizar configuración:', error);
+  // Solicitar permisos de notificaciones del navegador
+  const requestNotificationPermission = async () => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      const permission = await Notification.requestPermission();
+      return permission === 'granted';
     }
-  }, []);
+    return Notification.permission === 'granted';
+  };
 
-  /**
-   * Actualizar filtros de notificaciones
-   * @param {Object} newFilters - Nuevos filtros
-   */
-  const updateFilters = useCallback((newFilters) => {
-    dispatch({
-      type: NOTIFICATION_ACTIONS.UPDATE_FILTERS,
-      payload: newFilters
-    });
-  }, []);
-
-  /**
-   * Verificar si está en horario de no molestar
-   */
-  const isInDoNotDisturbHours = useCallback(() => {
+  // Verificar si está en horario No Molestar
+  const isInDoNotDisturbHours = () => {
     if (!state.settings.doNotDisturb) return false;
 
     const now = new Date();
@@ -498,348 +279,231 @@ export const NotificationProvider = ({ children }) => {
     const startTime = startHour * 60 + startMin;
     const endTime = endHour * 60 + endMin;
 
-    if (startTime <= endTime) {
-      return currentTime >= startTime && currentTime <= endTime;
-    } else {
-      // Cruzar medianoche
+    // Si el período cruza medianoche
+    if (startTime > endTime) {
       return currentTime >= startTime || currentTime <= endTime;
     }
-  }, [state.settings]);
-
-  /**
-   * Reproducir sonido de notificación
-   * @param {string} type - Tipo de notificación
-   */
-  const playNotificationSound = useCallback((type) => {
-    if (!state.settings.sound) return;
-
-    try {
-      let soundUrl = '/sounds/notification.mp3';
-      
-      switch (type) {
-        case 'error':
-          soundUrl = '/sounds/error.mp3';
-          break;
-        case 'warning':
-          soundUrl = '/sounds/warning.mp3';
-          break;
-        case 'success':
-          soundUrl = '/sounds/success.mp3';
-          break;
-        default:
-          soundUrl = '/sounds/notification.mp3';
-      }
-
-      const audio = new Audio(soundUrl);
-      audio.volume = 0.3;
-      audio.play().catch(() => {
-        // Ignorar errores de reproducción
-      });
-    } catch (error) {
-      // Ignorar errores de audio
-    }
-  }, [state.settings.sound]);
-
-  /**
-   * Mostrar notificación de escritorio
-   * @param {Object} notificationData - Datos de la notificación
-   */
-  const showDesktopNotification = useCallback((notificationData) => {
-    if (!state.settings.desktop || !('Notification' in window)) return;
-
-    if (Notification.permission === 'granted') {
-      const notification = new Notification(notificationData.titulo, {
-        body: notificationData.mensaje,
-        icon: '/favicon.ico',
-        tag: notificationData.id,
-        requireInteraction: notificationData.prioridad === 'urgente'
-      });
-
-      notification.onclick = () => {
-        window.focus();
-        notification.close();
-        
-        // Marcar como leída automáticamente
-        if (state.settings.autoMarkAsRead) {
-          markAsRead(notificationData.id);
-        }
-      };
-
-      // Auto-cerrar después de 5 segundos
-      setTimeout(() => notification.close(), 5000);
-    }
-  }, [state.settings, markAsRead]);
-
-  /**
-   * Conectar WebSocket para notificaciones en tiempo real
-   */
-  const connectWebSocket = useCallback(() => {
-    if (!isAuthenticated || wsRef.current) return;
-
-    try {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/ws/notifications`;
-      
-      wsRef.current = new WebSocket(wsUrl);
-
-      wsRef.current.onopen = () => {
-        console.log('WebSocket conectado');
-        dispatch({ type: NOTIFICATION_ACTIONS.WEBSOCKET_CONNECTED });
-        
-        // Limpiar timeout de reconexión
-        if (reconnectTimeoutRef.current) {
-          clearTimeout(reconnectTimeoutRef.current);
-          reconnectTimeoutRef.current = null;
-        }
-      };
-
-      wsRef.current.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          
-          dispatch({
-            type: NOTIFICATION_ACTIONS.WEBSOCKET_MESSAGE,
-            payload: data
-          });
-
-          // Procesar diferentes tipos de mensajes
-          switch (data.type) {
-            case 'new_notification':
-              // Agregar nueva notificación
-              dispatch({
-                type: NOTIFICATION_ACTIONS.ADD_NOTIFICATION,
-                payload: data.notification
-              });
-
-              // Mostrar toast
-              showToast({
-                type: getToastTypeFromPriority(data.notification.prioridad),
-                title: data.notification.titulo,
-                message: data.notification.mensaje,
-                duration: data.notification.prioridad === 'urgente' ? 0 : undefined
-              });
-
-              // Mostrar notificación de escritorio
-              showDesktopNotification(data.notification);
-              break;
-
-            case 'notification_read':
-              // Marcar como leída
-              dispatch({
-                type: NOTIFICATION_ACTIONS.MARK_AS_READ,
-                payload: { id: data.notification_id }
-              });
-              break;
-
-            default:
-              console.log('Mensaje WebSocket no manejado:', data);
-          }
-        } catch (error) {
-          console.error('Error al procesar mensaje WebSocket:', error);
-        }
-      };
-
-      wsRef.current.onclose = () => {
-        console.log('WebSocket desconectado');
-        dispatch({ type: NOTIFICATION_ACTIONS.WEBSOCKET_DISCONNECTED });
-        wsRef.current = null;
-
-        // Intentar reconectar después de 5 segundos
-        reconnectTimeoutRef.current = setTimeout(() => {
-          if (isAuthenticated) {
-            dispatch({ type: NOTIFICATION_ACTIONS.WEBSOCKET_RECONNECTING });
-            connectWebSocket();
-          }
-        }, 5000);
-      };
-
-      wsRef.current.onerror = (error) => {
-        console.error('Error WebSocket:', error);
-      };
-
-    } catch (error) {
-      console.error('Error al conectar WebSocket:', error);
-    }
-  }, [isAuthenticated, showToast, showDesktopNotification]);
-
-  /**
-   * Desconectar WebSocket
-   */
-  const disconnectWebSocket = useCallback(() => {
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
     
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-      reconnectTimeoutRef.current = null;
-    }
-  }, []);
-
-  /**
-   * Obtener tipo de toast según la prioridad
-   * @param {string} prioridad - Prioridad de la notificación
-   */
-  const getToastTypeFromPriority = (prioridad) => {
-    switch (prioridad) {
-      case 'urgente':
-        return 'error';
-      case 'alta':
-        return 'warning';
-      case 'media':
-        return 'info';
-      case 'baja':
-        return 'info';
-      default:
-        return 'info';
-    }
+    return currentTime >= startTime && currentTime <= endTime;
   };
 
-  /**
-   * Solicitar permisos de notificación
-   */
-  const requestNotificationPermission = useCallback(async () => {
-    if (!('Notification' in window)) {
-      return false;
-    }
-
-    if (Notification.permission === 'default') {
-      const permission = await Notification.requestPermission();
-      return permission === 'granted';
-    }
-
-    return Notification.permission === 'granted';
-  }, []);
-
-  // Cargar notificaciones al inicializar
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadNotifications();
-    }
-  }, [isAuthenticated, loadNotifications]);
-
-  // Conectar WebSocket cuando el usuario se autentica
-  useEffect(() => {
-    if (isAuthenticated) {
-      connectWebSocket();
-    } else {
-      disconnectWebSocket();
-    }
-
-    return () => {
-      disconnectWebSocket();
+  // Mostrar notificación
+  const showNotification = (notification) => {
+    const notificationData = {
+      ...notification,
+      id: notification.id || Date.now().toString(),
+      timestamp: notification.timestamp || new Date().toISOString(),
+      read: false
     };
-  }, [isAuthenticated, connectWebSocket, disconnectWebSocket]);
 
-  // Limpiar notificaciones cuando el usuario se desconecta
-  useEffect(() => {
-    if (!isAuthenticated) {
-      dispatch({ type: NOTIFICATION_ACTIONS.CLEAR_NOTIFICATIONS });
+    // Agregar a la lista
+    dispatch({
+      type: NOTIFICATION_ACTIONS.ADD_NOTIFICATION,
+      payload: notificationData
+    });
+
+    // Mostrar toast si las notificaciones están habilitadas
+    if (state.settings.enabled && !isInDoNotDisturbHours()) {
+      const toastOptions = {
+        duration: notification.priority === 'high' ? 8000 : 4000,
+        position: 'top-right'
+      };
+
+      switch (notification.type) {
+        case 'success':
+          toast.success(notification.message, toastOptions);
+          break;
+        case 'error':
+          toast.error(notification.message, toastOptions);
+          break;
+        case 'warning':
+          toast(notification.message, {
+            ...toastOptions,
+            icon: '⚠️'
+          });
+          break;
+        default:
+          toast(notification.message, toastOptions);
+      }
+
+      // Mostrar notificación del navegador si está habilitada
+      if (state.settings.browser && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification(notification.title, {
+          body: notification.message,
+          icon: '/favicon.ico',
+          tag: notification.id
+        });
+      }
+
+      // Reproducir sonido si está habilitado
+      if (state.settings.sound) {
+        // Aquí se podría reproducir un sonido
+        // new Audio('/notification-sound.mp3').play().catch(() => {});
+      }
     }
-  }, [isAuthenticated]);
 
-  // Recargar notificaciones cuando cambian los filtros
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadNotifications();
+    return notificationData.id;
+  };
+
+  // Funciones de conveniencia para diferentes tipos
+  const showSuccess = (title, message, options = {}) => {
+    return showNotification({
+      type: 'success',
+      title,
+      message,
+      priority: 'medium',
+      ...options
+    });
+  };
+
+  const showError = (title, message, options = {}) => {
+    return showNotification({
+      type: 'error',
+      title,
+      message,
+      priority: 'high',
+      ...options
+    });
+  };
+
+  const showWarning = (title, message, options = {}) => {
+    return showNotification({
+      type: 'warning',
+      title,
+      message,
+      priority: 'medium',
+      ...options
+    });
+  };
+
+  const showInfo = (title, message, options = {}) => {
+    return showNotification({
+      type: 'info',
+      title,
+      message,
+      priority: 'low',
+      ...options
+    });
+  };
+
+  // Marcar como leída
+  const markAsRead = (notificationId) => {
+    dispatch({
+      type: NOTIFICATION_ACTIONS.MARK_AS_READ,
+      payload: notificationId
+    });
+  };
+
+  // Marcar como no leída
+  const markAsUnread = (notificationId) => {
+    dispatch({
+      type: NOTIFICATION_ACTIONS.MARK_AS_UNREAD,
+      payload: notificationId
+    });
+  };
+
+  // Marcar todas como leídas
+  const markAllAsRead = () => {
+    dispatch({ type: NOTIFICATION_ACTIONS.MARK_ALL_AS_READ });
+  };
+
+  // Eliminar notificación
+  const removeNotification = (notificationId) => {
+    dispatch({
+      type: NOTIFICATION_ACTIONS.REMOVE_NOTIFICATION,
+      payload: notificationId
+    });
+  };
+
+  // Limpiar todas las notificaciones
+  const clearAll = () => {
+    dispatch({ type: NOTIFICATION_ACTIONS.CLEAR_ALL });
+  };
+
+  // Actualizar configuración
+  const updateSettings = (newSettings) => {
+    dispatch({
+      type: NOTIFICATION_ACTIONS.UPDATE_SETTINGS,
+      payload: newSettings
+    });
+  };
+
+  // Actualizar filtros
+  const updateFilters = (newFilters) => {
+    dispatch({
+      type: NOTIFICATION_ACTIONS.UPDATE_FILTERS,
+      payload: newFilters
+    });
+  };
+
+  // Obtener notificaciones filtradas
+  const getFilteredNotifications = () => {
+    let filtered = state.notifications;
+
+    // Filtrar por tipo
+    if (state.filters.types.length > 0 && !state.filters.types.includes('all')) {
+      filtered = filtered.filter(n => state.filters.types.includes(n.type));
     }
-  }, [state.filters]);
 
-  // Limpiar timeouts al desmontar
-  useEffect(() => {
-    return () => {
-      toastTimeoutsRef.current.forEach(timeoutId => clearTimeout(timeoutId));
-      toastTimeoutsRef.current.clear();
-    };
-  }, []);
+    // Filtrar por prioridad
+    if (state.filters.priority.length > 0 && !state.filters.priority.includes('all')) {
+      filtered = filtered.filter(n => state.filters.priority.includes(n.priority));
+    }
 
-  // Funciones de conveniencia para diferentes tipos de toast
-  const showSuccess = useCallback((title, message, options = {}) => {
-    showToast({ type: 'success', title, message, ...options });
-  }, [showToast]);
+    // Filtrar por estado de lectura
+    if (state.filters.read !== 'all') {
+      filtered = filtered.filter(n => 
+        state.filters.read === 'read' ? n.read : !n.read
+      );
+    }
 
-  const showError = useCallback((title, message, options = {}) => {
-    showToast({ type: 'error', title, message, persistent: true, ...options });
-  }, [showToast]);
+    return filtered;
+  };
 
-  const showWarning = useCallback((title, message, options = {}) => {
-    showToast({ type: 'warning', title, message, ...options });
-  }, [showToast]);
-
-  const showInfo = useCallback((title, message, options = {}) => {
-    showToast({ type: 'info', title, message, ...options });
-  }, [showToast]);
-
-  // Valor del contexto
-  const contextValue = {
-    // Estado
+  const value = {
     ...state,
-
-    // Acciones principales
-    loadNotifications,
-    markAsRead,
-    markAllAsRead,
-    removeNotification,
-    
-    // Toast notifications
-    showToast,
-    removeToast,
-    clearAllToasts,
+    showNotification,
     showSuccess,
     showError,
     showWarning,
     showInfo,
-    
-    // Configuración
+    markAsRead,
+    markAsUnread,
+    markAllAsRead,
+    removeNotification,
+    clearAll,
     updateSettings,
     updateFilters,
-    
-    // WebSocket
-    connectWebSocket,
-    disconnectWebSocket,
-    
-    // Utilidades
+    getFilteredNotifications,
     requestNotificationPermission,
-    isInDoNotDisturbHours,
-    
-    // Cargar más notificaciones
-    loadMore: () => loadNotifications(true)
+    isInDoNotDisturbHours
   };
 
   return (
-    <NotificationContext.Provider value={contextValue}>
+    <NotificationContext.Provider value={value}>
       {children}
     </NotificationContext.Provider>
   );
 };
 
-/**
- * Hook para usar el contexto de notificaciones
- */
+// Hook para usar el contexto
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
-  
-  if (context === undefined) {
-    throw new Error('useNotifications debe ser usado dentro de un NotificationProvider');
+  if (!context) {
+    throw new Error('useNotifications must be used within a NotificationProvider');
   }
-  
   return context;
 };
 
-/**
- * Hook para mostrar solo toast notifications
- */
+// Hook simplificado para toast
 export const useToast = () => {
-  const { showToast, showSuccess, showError, showWarning, showInfo, removeToast } = useNotifications();
+  const { showSuccess, showError, showWarning, showInfo } = useNotifications();
   
   return {
-    show: showToast,
     success: showSuccess,
     error: showError,
     warning: showWarning,
-    info: showInfo,
-    remove: removeToast
+    info: showInfo
   };
 };
 

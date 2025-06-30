@@ -1,81 +1,43 @@
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
-import { authService } from '../services/authService';
-import { useLocalStorage } from '../hooks/useLocalStorage';
-
 /**
- * Contexto de autenticación para el sistema de gestión de bovinos
- * Maneja el estado global de autenticación, usuario y permisos
+ * AuthContext.js - Contexto para manejo de autenticación y autorización
  */
 
-// Estados iniciales del contexto de autenticación
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
+
+// Estado inicial de autenticación
 const initialState = {
-  // Estado de autenticación
   isAuthenticated: false,
   isLoading: true,
   isInitialized: false,
-  
-  // Datos del usuario
   user: null,
   token: null,
   refreshToken: null,
-  
-  // Permisos y roles
   permissions: [],
   roles: [],
-  
-  // Estados de la UI
-  loginLoading: false,
-  registerLoading: false,
-  
-  // Errores
   error: null,
-  
-  // Configuración
-  rememberMe: false,
-  sessionExpiration: null
+  sessionExpiration: null,
+  rememberMe: false
 };
 
-// Tipos de acciones para el reducer
+// Acciones del reducer
 const AUTH_ACTIONS = {
-  // Inicialización
   INITIALIZE_START: 'INITIALIZE_START',
-  INITIALIZE_SUCCESS: 'INITIALIZE_SUCCESS',
+  INITIALIZE_SUCCESS: 'INITIALIZE_SUCCESS', 
   INITIALIZE_FAILURE: 'INITIALIZE_FAILURE',
-  
-  // Login
   LOGIN_START: 'LOGIN_START',
   LOGIN_SUCCESS: 'LOGIN_SUCCESS',
   LOGIN_FAILURE: 'LOGIN_FAILURE',
-  
-  // Registro
-  REGISTER_START: 'REGISTER_START',
-  REGISTER_SUCCESS: 'REGISTER_SUCCESS',
-  REGISTER_FAILURE: 'REGISTER_FAILURE',
-  
-  // Logout
   LOGOUT: 'LOGOUT',
-  
-  // Token
   TOKEN_REFRESH_SUCCESS: 'TOKEN_REFRESH_SUCCESS',
   TOKEN_REFRESH_FAILURE: 'TOKEN_REFRESH_FAILURE',
-  
-  // Usuario
   UPDATE_USER: 'UPDATE_USER',
   UPDATE_PERMISSIONS: 'UPDATE_PERMISSIONS',
-  
-  // Errores
   CLEAR_ERROR: 'CLEAR_ERROR',
   SET_ERROR: 'SET_ERROR',
-  
-  // Configuración
   SET_REMEMBER_ME: 'SET_REMEMBER_ME'
 };
 
-/**
- * Reducer para manejar las acciones del estado de autenticación
- * @param {Object} state - Estado actual
- * @param {Object} action - Acción a ejecutar
- */
+// Reducer de autenticación
 const authReducer = (state, action) => {
   switch (action.type) {
     case AUTH_ACTIONS.INITIALIZE_START:
@@ -90,82 +52,55 @@ const authReducer = (state, action) => {
         ...state,
         isLoading: false,
         isInitialized: true,
-        isAuthenticated: !!action.payload.user,
-        user: action.payload.user,
-        token: action.payload.token,
-        refreshToken: action.payload.refreshToken,
-        permissions: action.payload.permissions || [],
-        roles: action.payload.roles || [],
-        error: null
-      };
-
-    case AUTH_ACTIONS.INITIALIZE_FAILURE:
-      return {
-        ...state,
-        isLoading: false,
-        isInitialized: true,
-        isAuthenticated: false,
-        user: null,
-        token: null,
-        refreshToken: null,
-        permissions: [],
-        roles: [],
-        error: action.payload
-      };
-
-    case AUTH_ACTIONS.LOGIN_START:
-      return {
-        ...state,
-        loginLoading: true,
-        error: null
-      };
-
-    case AUTH_ACTIONS.LOGIN_SUCCESS:
-      return {
-        ...state,
-        loginLoading: false,
         isAuthenticated: true,
         user: action.payload.user,
         token: action.payload.token,
         refreshToken: action.payload.refreshToken,
         permissions: action.payload.permissions || [],
         roles: action.payload.roles || [],
-        rememberMe: action.payload.rememberMe || false,
+        sessionExpiration: action.payload.sessionExpiration
+      };
+
+    case AUTH_ACTIONS.INITIALIZE_FAILURE:
+      return {
+        ...initialState,
+        isLoading: false,
+        isInitialized: true,
+        error: action.payload
+      };
+
+    case AUTH_ACTIONS.LOGIN_START:
+      return {
+        ...state,
+        isLoading: true,
+        error: null
+      };
+
+    case AUTH_ACTIONS.LOGIN_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        isAuthenticated: true,
+        user: action.payload.user,
+        token: action.payload.token,
+        refreshToken: action.payload.refreshToken,
+        permissions: action.payload.permissions || [],
+        roles: action.payload.roles || [],
         sessionExpiration: action.payload.sessionExpiration,
+        rememberMe: action.payload.rememberMe || false,
         error: null
       };
 
     case AUTH_ACTIONS.LOGIN_FAILURE:
       return {
         ...state,
-        loginLoading: false,
+        isLoading: false,
         isAuthenticated: false,
         user: null,
         token: null,
         refreshToken: null,
         permissions: [],
         roles: [],
-        error: action.payload
-      };
-
-    case AUTH_ACTIONS.REGISTER_START:
-      return {
-        ...state,
-        registerLoading: true,
-        error: null
-      };
-
-    case AUTH_ACTIONS.REGISTER_SUCCESS:
-      return {
-        ...state,
-        registerLoading: false,
-        error: null
-      };
-
-    case AUTH_ACTIONS.REGISTER_FAILURE:
-      return {
-        ...state,
-        registerLoading: false,
         error: action.payload
       };
 
@@ -228,441 +163,256 @@ const authReducer = (state, action) => {
   }
 };
 
-// Crear el contexto de autenticación
-const AuthContext = createContext(undefined);
+// Crear el contexto
+const AuthContext = createContext();
 
-/**
- * Proveedor del contexto de autenticación
- * @param {Object} props - Props del componente
- */
+// Proveedor del contexto
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
-  const { getItem, setItem, removeItem } = useLocalStorage();
 
-  /**
-   * Inicializar autenticación al cargar la aplicación
-   */
-  const initialize = useCallback(async () => {
-    try {
-      dispatch({ type: AUTH_ACTIONS.INITIALIZE_START });
+  // Simular usuario autenticado para desarrollo
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        dispatch({ type: AUTH_ACTIONS.INITIALIZE_START });
 
-      const token = getItem('authToken');
-      const refreshToken = getItem('refreshToken');
-      const userString = getItem('user');
+        // Verificar si hay datos de autenticación en localStorage
+        const savedToken = localStorage.getItem('authToken');
+        const savedUser = localStorage.getItem('authUser');
 
-      if (token && userString) {
-        const user = JSON.parse(userString);
-        
-        // Verificar validez del token
-        const response = await authService.verifyToken(token);
-        
-        if (response.success) {
+        if (savedToken && savedUser) {
+          // Simular autenticación exitosa
+          const user = JSON.parse(savedUser);
           dispatch({
             type: AUTH_ACTIONS.INITIALIZE_SUCCESS,
             payload: {
-              user: response.user || user,
-              token,
-              refreshToken,
-              permissions: response.permissions || [],
-              roles: response.roles || []
+              user,
+              token: savedToken,
+              refreshToken: localStorage.getItem('refreshToken'),
+              permissions: ['read', 'write', 'admin'],
+              roles: ['admin'],
+              sessionExpiration: Date.now() + 24 * 60 * 60 * 1000 // 24 horas
             }
           });
         } else {
-          // Token inválido, limpiar datos
-          removeItem('authToken');
-          removeItem('refreshToken');
-          removeItem('user');
-          
+          // Usuario no autenticado, pero para desarrollo vamos a auto-autenticar
+          const mockUser = {
+            id: 1,
+            name: 'Usuario Demo',
+            email: 'demo@sistemaganadero.com',
+            role: 'Administrador',
+            avatar: '/api/placeholder/40/40',
+            ranch: 'Rancho Demo'
+          };
+
+          const mockToken = 'demo-token-' + Date.now();
+
+          // Guardar en localStorage
+          localStorage.setItem('authToken', mockToken);
+          localStorage.setItem('authUser', JSON.stringify(mockUser));
+
           dispatch({
-            type: AUTH_ACTIONS.INITIALIZE_FAILURE,
-            payload: 'Token inválido'
+            type: AUTH_ACTIONS.INITIALIZE_SUCCESS,
+            payload: {
+              user: mockUser,
+              token: mockToken,
+              refreshToken: 'demo-refresh-token',
+              permissions: ['read', 'write', 'admin'],
+              roles: ['admin'],
+              sessionExpiration: Date.now() + 24 * 60 * 60 * 1000
+            }
           });
         }
-      } else {
+      } catch (error) {
+        console.error('Error initializing auth:', error);
         dispatch({
-          type: AUTH_ACTIONS.INITIALIZE_SUCCESS,
-          payload: {
-            user: null,
-            token: null,
-            refreshToken: null
-          }
+          type: AUTH_ACTIONS.INITIALIZE_FAILURE,
+          payload: error.message
         });
       }
-    } catch (error) {
-      console.error('Error al inicializar autenticación:', error);
-      dispatch({
-        type: AUTH_ACTIONS.INITIALIZE_FAILURE,
-        payload: 'Error al inicializar sesión'
-      });
-    }
-  }, [getItem, removeItem]);
+    };
 
-  /**
-   * Iniciar sesión
-   * @param {string} email - Email del usuario
-   * @param {string} password - Contraseña del usuario
-   * @param {boolean} rememberMe - Recordar sesión
-   */
-  const login = useCallback(async (email, password, rememberMe = false) => {
+    initializeAuth();
+  }, []);
+
+  // Función de login
+  const login = async (credentials) => {
     try {
       dispatch({ type: AUTH_ACTIONS.LOGIN_START });
 
-      const response = await authService.login(email, password, rememberMe);
+      // Simular llamada a API
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      if (response.success) {
-        const sessionExpiration = rememberMe 
-          ? null 
-          : Date.now() + (24 * 60 * 60 * 1000); // 24 horas
+      const mockUser = {
+        id: 1,
+        name: credentials.email.split('@')[0],
+        email: credentials.email,
+        role: 'Administrador',
+        avatar: '/api/placeholder/40/40',
+        ranch: 'Rancho Principal'
+      };
 
-        // Guardar datos en localStorage
-        setItem('authToken', response.token);
-        setItem('refreshToken', response.refreshToken);
-        setItem('user', JSON.stringify(response.user));
-        
-        if (sessionExpiration) {
-          setItem('sessionExpiration', sessionExpiration.toString());
-        }
+      const mockToken = 'token-' + Date.now();
 
-        dispatch({
-          type: AUTH_ACTIONS.LOGIN_SUCCESS,
-          payload: {
-            user: response.user,
-            token: response.token,
-            refreshToken: response.refreshToken,
-            permissions: response.permissions || [],
-            roles: response.roles || [],
-            rememberMe,
-            sessionExpiration
-          }
-        });
-
-        return { success: true };
-      } else {
-        dispatch({
-          type: AUTH_ACTIONS.LOGIN_FAILURE,
-          payload: response.message || 'Error al iniciar sesión'
-        });
-
-        return { success: false, error: response.message };
+      // Guardar en localStorage
+      localStorage.setItem('authToken', mockToken);
+      localStorage.setItem('authUser', JSON.stringify(mockUser));
+      if (credentials.rememberMe) {
+        localStorage.setItem('refreshToken', 'refresh-' + Date.now());
       }
+
+      dispatch({
+        type: AUTH_ACTIONS.LOGIN_SUCCESS,
+        payload: {
+          user: mockUser,
+          token: mockToken,
+          refreshToken: credentials.rememberMe ? 'refresh-' + Date.now() : null,
+          permissions: ['read', 'write', 'admin'],
+          roles: ['admin'],
+          sessionExpiration: Date.now() + 24 * 60 * 60 * 1000,
+          rememberMe: credentials.rememberMe
+        }
+      });
+
+      return { success: true };
     } catch (error) {
-      console.error('Error en login:', error);
-      const errorMessage = error.response?.data?.message || 'Error de conexión';
-      
       dispatch({
         type: AUTH_ACTIONS.LOGIN_FAILURE,
-        payload: errorMessage
+        payload: error.message
       });
-
-      return { success: false, error: errorMessage };
+      return { success: false, error: error.message };
     }
-  }, [setItem]);
+  };
 
-  /**
-   * Registrar nuevo usuario
-   * @param {Object} userData - Datos del usuario
-   */
-  const register = useCallback(async (userData) => {
+  // Función de logout
+  const logout = async () => {
     try {
-      dispatch({ type: AUTH_ACTIONS.REGISTER_START });
-
-      const response = await authService.register(userData);
-
-      if (response.success) {
-        dispatch({ type: AUTH_ACTIONS.REGISTER_SUCCESS });
-        return { success: true };
-      } else {
-        dispatch({
-          type: AUTH_ACTIONS.REGISTER_FAILURE,
-          payload: response.message || 'Error al registrar usuario'
-        });
-
-        return { success: false, error: response.message };
-      }
-    } catch (error) {
-      console.error('Error en registro:', error);
-      const errorMessage = error.response?.data?.message || 'Error de conexión';
-      
-      dispatch({
-        type: AUTH_ACTIONS.REGISTER_FAILURE,
-        payload: errorMessage
-      });
-
-      return { success: false, error: errorMessage };
-    }
-  }, []);
-
-  /**
-   * Cerrar sesión
-   */
-  const logout = useCallback(async () => {
-    try {
-      // Notificar al servidor del logout (opcional)
-      await authService.logout();
-    } catch (error) {
-      console.error('Error al notificar logout:', error);
-    } finally {
-      // Limpiar datos locales
-      removeItem('authToken');
-      removeItem('refreshToken');
-      removeItem('user');
-      removeItem('sessionExpiration');
+      // Limpiar localStorage
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('authUser');
+      localStorage.removeItem('refreshToken');
 
       dispatch({ type: AUTH_ACTIONS.LOGOUT });
-    }
-  }, [removeItem]);
-
-  /**
-   * Renovar token de acceso
-   */
-  const refreshAuthToken = useCallback(async () => {
-    try {
-      const response = await authService.refreshToken();
-
-      if (response.success) {
-        // Actualizar tokens en localStorage
-        setItem('authToken', response.token);
-        setItem('refreshToken', response.refreshToken);
-
-        dispatch({
-          type: AUTH_ACTIONS.TOKEN_REFRESH_SUCCESS,
-          payload: {
-            token: response.token,
-            refreshToken: response.refreshToken,
-            sessionExpiration: Date.now() + (24 * 60 * 60 * 1000)
-          }
-        });
-
-        return { success: true };
-      } else {
-        // Fallo al renovar token, cerrar sesión
-        logout();
-        return { success: false };
-      }
+      
+      return { success: true };
     } catch (error) {
-      console.error('Error al renovar token:', error);
-      logout();
-      return { success: false };
+      console.error('Error during logout:', error);
+      return { success: false, error: error.message };
     }
-  }, [setItem, logout]);
+  };
 
-  /**
-   * Actualizar datos del usuario
-   * @param {Object} userData - Nuevos datos del usuario
-   */
-  const updateUser = useCallback(async (userData) => {
-    try {
-      const response = await authService.updateProfile(userData);
+  // Función para actualizar usuario
+  const updateUser = (userData) => {
+    dispatch({
+      type: AUTH_ACTIONS.UPDATE_USER,
+      payload: userData
+    });
 
-      if (response.success) {
-        // Actualizar usuario en localStorage
-        setItem('user', JSON.stringify(response.user));
+    // Actualizar localStorage
+    const updatedUser = { ...state.user, ...userData };
+    localStorage.setItem('authUser', JSON.stringify(updatedUser));
+  };
 
-        dispatch({
-          type: AUTH_ACTIONS.UPDATE_USER,
-          payload: response.user
-        });
+  // Función para verificar permisos
+  const hasPermission = (permission) => {
+    return state.permissions.includes(permission) || state.roles.includes('admin');
+  };
 
-        return { success: true };
-      } else {
-        return { success: false, error: response.message };
-      }
-    } catch (error) {
-      console.error('Error al actualizar usuario:', error);
-      return { success: false, error: 'Error al actualizar perfil' };
-    }
-  }, [setItem]);
+  // Función para verificar roles
+  const hasRole = (role) => {
+    return state.roles.includes(role);
+  };
 
-  /**
-   * Cambiar contraseña
-   * @param {string} currentPassword - Contraseña actual
-   * @param {string} newPassword - Nueva contraseña
-   * @param {string} confirmPassword - Confirmación de contraseña
-   */
-  const changePassword = useCallback(async (currentPassword, newPassword, confirmPassword) => {
-    try {
-      const response = await authService.changePassword(currentPassword, newPassword, confirmPassword);
-      return response;
-    } catch (error) {
-      console.error('Error al cambiar contraseña:', error);
-      return { success: false, error: 'Error al cambiar contraseña' };
-    }
-  }, []);
+  // Función para verificar múltiples permisos
+  const hasAllPermissions = (permissions) => {
+    return permissions.every(permission => hasPermission(permission));
+  };
 
-  /**
-   * Verificar si el usuario tiene un permiso específico
-   * @param {string} permission - Permiso a verificar
-   */
-  const hasPermission = useCallback((permission) => {
-    return state.permissions.includes(permission);
-  }, [state.permissions]);
+  // Función para verificar si tiene al menos uno de los permisos
+  const hasAnyPermission = (permissions) => {
+    return permissions.some(permission => hasPermission(permission));
+  };
 
-  /**
-   * Verificar si el usuario tiene un rol específico
-   * @param {string} role - Rol a verificar
-   */
-  const hasRole = useCallback((role) => {
-    return state.roles.some(userRole => userRole.nombre === role);
-  }, [state.roles]);
-
-  /**
-   * Verificar si el usuario tiene alguno de los roles especificados
-   * @param {Array} roles - Array de roles a verificar
-   */
-  const hasAnyRole = useCallback((roles) => {
+  // Función para verificar múltiples roles
+  const hasAnyRole = (roles) => {
     return roles.some(role => hasRole(role));
-  }, [hasRole]);
+  };
 
-  /**
-   * Limpiar errores
-   */
-  const clearError = useCallback(() => {
+  // Función para limpiar errores
+  const clearError = () => {
     dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
-  }, []);
+  };
 
-  /**
-   * Verificar si la sesión está expirada
-   */
-  const isSessionExpired = useCallback(() => {
+  // Función para refrescar token
+  const refreshToken = async () => {
+    try {
+      if (!state.refreshToken) {
+        throw new Error('No refresh token available');
+      }
+
+      // Simular llamada a API
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const newToken = 'refreshed-token-' + Date.now();
+      const newRefreshToken = 'refreshed-refresh-' + Date.now();
+
+      localStorage.setItem('authToken', newToken);
+      localStorage.setItem('refreshToken', newRefreshToken);
+
+      dispatch({
+        type: AUTH_ACTIONS.TOKEN_REFRESH_SUCCESS,
+        payload: {
+          token: newToken,
+          refreshToken: newRefreshToken,
+          sessionExpiration: Date.now() + 24 * 60 * 60 * 1000
+        }
+      });
+
+      return { success: true, token: newToken };
+    } catch (error) {
+      dispatch({
+        type: AUTH_ACTIONS.TOKEN_REFRESH_FAILURE,
+        payload: error.message
+      });
+      return { success: false, error: error.message };
+    }
+  };
+
+  // Verificar si la sesión ha expirado
+  const isSessionExpired = () => {
     if (!state.sessionExpiration) return false;
     return Date.now() > state.sessionExpiration;
-  }, [state.sessionExpiration]);
+  };
 
-  // Inicializar autenticación al montar el componente
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
-
-  // Verificar expiración de sesión periódicamente
-  useEffect(() => {
-    if (!state.isAuthenticated || state.rememberMe) return;
-
-    const interval = setInterval(() => {
-      if (isSessionExpired()) {
-        logout();
-      }
-    }, 60000); // Verificar cada minuto
-
-    return () => clearInterval(interval);
-  }, [state.isAuthenticated, state.rememberMe, isSessionExpired, logout]);
-
-  // Configurar interceptor para renovación automática de tokens
-  useEffect(() => {
-    const handleTokenExpired = () => {
-      logout();
-    };
-
-    // Escuchar eventos personalizados de token expirado
-    window.addEventListener('auth:tokenExpired', handleTokenExpired);
-    window.addEventListener('auth:unauthorized', handleTokenExpired);
-
-    return () => {
-      window.removeEventListener('auth:tokenExpired', handleTokenExpired);
-      window.removeEventListener('auth:unauthorized', handleTokenExpired);
-    };
-  }, [logout]);
-
-  // Valor del contexto
-  const contextValue = {
-    // Estado
+  const value = {
     ...state,
-    
-    // Acciones
     login,
-    register,
     logout,
-    refreshAuthToken,
     updateUser,
-    changePassword,
-    
-    // Utilidades
     hasPermission,
     hasRole,
+    hasAllPermissions,
+    hasAnyPermission,
     hasAnyRole,
     clearError,
-    isSessionExpired,
-    
-    // Funciones de inicialización
-    initialize
+    refreshToken,
+    isSessionExpired
   };
 
   return (
-    <AuthContext.Provider value={contextValue}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-/**
- * Hook para usar el contexto de autenticación
- */
+// Hook para usar el contexto
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  
-  if (context === undefined) {
-    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-  
   return context;
-};
-
-/**
- * HOC para proteger rutas que requieren autenticación
- * @param {React.Component} Component - Componente a proteger
- */
-export const withAuth = (Component) => {
-  return function AuthenticatedComponent(props) {
-    const { isAuthenticated, isLoading } = useAuth();
-    
-    if (isLoading) {
-      return <div>Cargando...</div>; // O un componente de loading personalizado
-    }
-    
-    if (!isAuthenticated) {
-      return <div>No autorizado</div>; // O redireccionar al login
-    }
-    
-    return <Component {...props} />;
-  };
-};
-
-/**
- * HOC para proteger rutas que requieren permisos específicos
- * @param {Array} requiredPermissions - Permisos requeridos
- */
-export const withPermissions = (requiredPermissions) => (Component) => {
-  return function PermissionProtectedComponent(props) {
-    const { hasPermission, hasAnyRole } = useAuth();
-    
-    const hasRequiredPermissions = requiredPermissions.every(permission => 
-      hasPermission(permission)
-    );
-    
-    // Los administradores siempre tienen acceso
-    const isAdmin = hasAnyRole(['admin']);
-    
-    if (!hasRequiredPermissions && !isAdmin) {
-      return <div>Sin permisos suficientes</div>;
-    }
-    
-    return <Component {...props} />;
-  };
-};
-
-/**
- * HOC para proteger rutas que requieren roles específicos
- * @param {Array} requiredRoles - Roles requeridos
- */
-export const withRoles = (requiredRoles) => (Component) => {
-  return function RoleProtectedComponent(props) {
-    const { hasAnyRole } = useAuth();
-    
-    if (!hasAnyRole(requiredRoles)) {
-      return <div>Sin permisos de rol</div>;
-    }
-    
-    return <Component {...props} />;
-  };
 };
 
 export default AuthContext;

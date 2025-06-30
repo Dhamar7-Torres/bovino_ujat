@@ -1,15 +1,12 @@
 /**
  * App.jsx - Componente principal de la aplicación de gestión de bovinos
- * Configuración de providers globales, routing y layout principal del sistema
+ * Versión corregida con rutas básicas funcionales
  */
 
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
-import { QueryClient, QueryClientProvider } from 'react-query';
-import { ReactQueryDevtools } from 'react-query/devtools';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
-import { AnimatePresence } from 'framer-motion';
 
 // Context Providers
 import { ThemeProvider } from './context/ThemeContext';
@@ -22,329 +19,206 @@ import Layout from './components/common/Layout/Layout';
 import ErrorBoundary from './components/common/ErrorBoundary/ErrorBoundary';
 import Loading from './components/common/Loading/Loading';
 
-// Pages - Lazy loading para optimización
+// Pages - Solo las que existen
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
-const Bovines = React.lazy(() => import('./pages/bovines/Bovines'));
-const BovineDetail = React.lazy(() => import('./pages/bovines/BovineDetail'));
-const BovineForm = React.lazy(() => import('./pages/bovines/BovineForm'));
-const Health = React.lazy(() => import('./pages/health/Health'));
-const HealthRecord = React.lazy(() => import('./pages/health/HealthRecord'));
-const VaccineSchedule = React.lazy(() => import('./pages/health/VaccineSchedule'));
-const Production = React.lazy(() => import('./pages/production/Production'));
-const MilkProduction = React.lazy(() => import('./pages/production/MilkProduction'));
-const Breeding = React.lazy(() => import('./pages/breeding/Breeding'));
-const BreedingRecord = React.lazy(() => import('./pages/breeding/BreedingRecord'));
-const Inventory = React.lazy(() => import('./pages/inventory/Inventory'));
-const InventoryItem = React.lazy(() => import('./pages/inventory/InventoryItem'));
-const Finance = React.lazy(() => import('./pages/finance/Finance'));
-const FinanceRecord = React.lazy(() => import('./pages/finance/FinanceRecord'));
-const Reports = React.lazy(() => import('./pages/reports/Reports'));
-const CustomReports = React.lazy(() => import('./pages/reports/CustomReports'));
-const Calendar = React.lazy(() => import('./pages/calendar/Calendar'));
-const Location = React.lazy(() => import('./pages/location/Location'));
-const Profile = React.lazy(() => import('./pages/settings/Profile'));
-const RanchSettings = React.lazy(() => import('./pages/settings/RanchSettings'));
-const UserManagement = React.lazy(() => import('./pages/settings/UserManagement'));
-const SystemSettings = React.lazy(() => import('./pages/settings/SystemSettings'));
-const Login = React.lazy(() => import('./pages/auth/Login'));
-const Register = React.lazy(() => import('./pages/auth/Register'));
-const ForgotPassword = React.lazy(() => import('./pages/auth/ForgotPassword'));
-const NotFound = React.lazy(() => import('./pages/404'));
 
-// Hooks personalizados
-import { useAuth } from './hooks/useAuth';
+// Componente simple para páginas que aún no existen
+const ComingSoon = ({ pageName }) => (
+  <div className="min-h-96 flex items-center justify-center">
+    <div className="text-center space-y-4">
+      <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto">
+        <span className="text-2xl">🚧</span>
+      </div>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        {pageName}
+      </h2>
+      <p className="text-gray-600 dark:text-gray-400">
+        Esta página está en desarrollo y estará disponible pronto.
+      </p>
+      <button
+        onClick={() => window.history.back()}
+        className="btn-primary"
+      >
+        Volver
+      </button>
+    </div>
+  </div>
+);
 
 // Configuración de React Query
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Configuración de caché y retry para la aplicación ganadera
-      staleTime: 1000 * 60 * 5, // 5 minutos
-      cacheTime: 1000 * 60 * 30, // 30 minutos
-      retry: (failureCount, error) => {
-        // No reintentar en errores de autenticación
-        if (error?.response?.status === 401 || error?.response?.status === 403) {
-          return false;
-        }
-        // Máximo 3 reintentos para otros errores
-        return failureCount < 3;
-      },
+      retry: 3,
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+      staleTime: 5 * 60 * 1000, // 5 minutos
+      cacheTime: 10 * 60 * 1000, // 10 minutos
       refetchOnWindowFocus: false,
-      refetchOnMount: true,
-      refetchOnReconnect: true,
+      refetchOnReconnect: true
     },
     mutations: {
-      // Configuración para mutations críticas del sistema ganadero
-      retry: 1,
-      onError: (error) => {
-        console.error('Error en mutation:', error);
-      },
-    },
-  },
+      retry: 1
+    }
+  }
 });
 
-/**
- * Componente de rutas protegidas
- * Verifica autenticación antes de permitir acceso a rutas privadas
- */
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  // Mostrar loading mientras se verifica la autenticación
-  if (isLoading) {
-    return <Loading fullScreen message="Verificando autenticación..." />;
-  }
-
-  // Redirigir a login si no está autenticado
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
-};
-
-/**
- * Componente de rutas públicas
- * Redirige a dashboard si ya está autenticado
- */
-const PublicRoute = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  // Mostrar loading mientras se verifica la autenticación
-  if (isLoading) {
-    return <Loading fullScreen message="Verificando autenticación..." />;
-  }
-
-  // Redirigir a dashboard si ya está autenticado
-  if (isAuthenticated) {
-    return <Navigate to="/" replace />;
-  }
-
-  return children;
-};
-
-/**
- * Componente principal de la aplicación
- * Configuración de providers, routing y manejo de errores globales
- */
 const App = () => {
-  
-  // Effect para configuración inicial de la aplicación
-  useEffect(() => {
-    // Configurar título dinámico de la aplicación
-    document.title = 'Sistema de Gestión de Bovinos';
-    
-    // Configurar meta tags dinámicos
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 
-        'Sistema integral para la gestión de bovinos, salud, producción y finanzas del rancho'
-      );
-    }
-
-    // Configurar theme-color dinámico
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', '#3B82F6');
-    }
-
-    // Event listener para manejo de errores no capturados
-    const handleUnhandledError = (event) => {
-      console.error('Error no manejado:', event.error);
-      // Aquí se podría enviar el error a un servicio de logging
-    };
-
-    // Event listener para promesas rechazadas no manejadas
-    const handleUnhandledRejection = (event) => {
-      console.error('Promise rechazada no manejada:', event.reason);
-      // Aquí se podría enviar el error a un servicio de logging
-    };
-
-    // Agregar event listeners
-    window.addEventListener('error', handleUnhandledError);
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
-
-    // Cleanup function
-    return () => {
-      window.removeEventListener('error', handleUnhandledError);
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-    };
-  }, []);
-
   return (
     <ErrorBoundary>
-      <HelmetProvider>
-        <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
           <ThemeProvider>
-            <AuthProvider>
+            <DataProvider>
               <NotificationProvider>
-                <DataProvider>
-                  <Router>
-                    <div className="App min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-                      <AnimatePresence mode="wait">
-                        <Routes>
-                          {/* Rutas públicas - Autenticación */}
-                          <Route 
-                            path="/login" 
-                            element={
-                              <PublicRoute>
-                                <Suspense fallback={<Loading fullScreen message="Cargando login..." />}>
-                                  <Login />
-                                </Suspense>
-                              </PublicRoute>
-                            } 
-                          />
-                          <Route 
-                            path="/register" 
-                            element={
-                              <PublicRoute>
-                                <Suspense fallback={<Loading fullScreen message="Cargando registro..." />}>
-                                  <Register />
-                                </Suspense>
-                              </PublicRoute>
-                            } 
-                          />
-                          <Route 
-                            path="/forgot-password" 
-                            element={
-                              <PublicRoute>
-                                <Suspense fallback={<Loading fullScreen message="Cargando recuperación..." />}>
-                                  <ForgotPassword />
-                                </Suspense>
-                              </PublicRoute>
-                            } 
-                          />
+                <Router>
+                  <Layout>
+                    <Suspense fallback={
+                      <div className="min-h-96 flex items-center justify-center">
+                        <Loading 
+                          message="Cargando página..." 
+                          type="bovines"
+                          size="large"
+                          variant="thematic"
+                        />
+                      </div>
+                    }>
+                      <Routes>
+                        {/* Ruta principal - Dashboard */}
+                        <Route index element={<Dashboard />} />
+                        
+                        {/* Rutas de bovinos */}
+                        <Route path="bovines" element={<ComingSoon pageName="Gestión de Bovinos" />} />
+                        <Route path="bovines/new" element={<ComingSoon pageName="Agregar Bovino" />} />
+                        <Route path="bovines/:id" element={<ComingSoon pageName="Detalle de Bovino" />} />
+                        <Route path="bovines/:id/edit" element={<ComingSoon pageName="Editar Bovino" />} />
+                        
+                        {/* Rutas de salud */}
+                        <Route path="health" element={<ComingSoon pageName="Control Sanitario" />} />
+                        <Route path="health/record" element={<ComingSoon pageName="Registro de Salud" />} />
+                        <Route path="health/vaccines" element={<ComingSoon pageName="Vacunación" />} />
+                        <Route path="health/alerts" element={<ComingSoon pageName="Alertas de Salud" />} />
+                        
+                        {/* Rutas de producción */}
+                        <Route path="production" element={<ComingSoon pageName="Producción" />} />
+                        <Route path="production/milk" element={<ComingSoon pageName="Producción Lechera" />} />
+                        <Route path="production/record" element={<ComingSoon pageName="Registro de Producción" />} />
+                        
+                        {/* Rutas de reproducción */}
+                        <Route path="breeding" element={<ComingSoon pageName="Reproducción" />} />
+                        <Route path="breeding/record" element={<ComingSoon pageName="Registro Reproductivo" />} />
+                        
+                        {/* Rutas de inventario */}
+                        <Route path="inventory" element={<ComingSoon pageName="Inventario" />} />
+                        <Route path="inventory/:id" element={<ComingSoon pageName="Detalle de Inventario" />} />
+                        
+                        {/* Rutas financieras */}
+                        <Route path="finance" element={<ComingSoon pageName="Finanzas" />} />
+                        <Route path="finance/record" element={<ComingSoon pageName="Registro Financiero" />} />
+                        
+                        {/* Rutas de reportes */}
+                        <Route path="reports" element={<ComingSoon pageName="Reportes" />} />
+                        <Route path="reports/custom" element={<ComingSoon pageName="Reportes Personalizados" />} />
+                        
+                        {/* Rutas de eventos */}
+                        <Route path="events" element={<ComingSoon pageName="Eventos" />} />
+                        <Route path="calendar" element={<ComingSoon pageName="Calendario" />} />
+                        
+                        {/* Rutas de ubicación */}
+                        <Route path="maps" element={<ComingSoon pageName="Mapas" />} />
+                        <Route path="tracking" element={<ComingSoon pageName="Seguimiento" />} />
+                        
+                        {/* Rutas de configuración */}
+                        <Route path="settings" element={<ComingSoon pageName="Configuración" />} />
+                        <Route path="profile" element={<ComingSoon pageName="Mi Perfil" />} />
+                        <Route path="users" element={<ComingSoon pageName="Gestión de Usuarios" />} />
+                        
+                        {/* Rutas de ayuda */}
+                        <Route path="help" element={<ComingSoon pageName="Centro de Ayuda" />} />
+                        
+                        {/* Ruta 404 */}
+                        <Route path="*" element={
+                          <div className="min-h-96 flex items-center justify-center">
+                            <div className="text-center space-y-4">
+                              <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto">
+                                <span className="text-2xl">❌</span>
+                              </div>
+                              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                Página no encontrada
+                              </h2>
+                              <p className="text-gray-600 dark:text-gray-400">
+                                La página que buscas no existe o ha sido movida.
+                              </p>
+                              <div className="flex gap-3 justify-center">
+                                <button
+                                  onClick={() => window.history.back()}
+                                  className="btn-outline"
+                                >
+                                  Volver
+                                </button>
+                                <button
+                                  onClick={() => window.location.href = '/'}
+                                  className="btn-primary"
+                                >
+                                  Ir al Inicio
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        } />
+                      </Routes>
+                    </Suspense>
+                  </Layout>
+                </Router>
 
-                          {/* Rutas protegidas - Aplicación principal */}
-                          <Route 
-                            path="/*" 
-                            element={
-                              <ProtectedRoute>
-                                <Layout>
-                                  <Suspense fallback={<Loading message="Cargando página..." />}>
-                                    <Routes>
-                                      {/* Dashboard principal */}
-                                      <Route index element={<Dashboard />} />
-                                      
-                                      {/* Gestión de bovinos */}
-                                      <Route path="bovines" element={<Bovines />} />
-                                      <Route path="bovines/new" element={<BovineForm />} />
-                                      <Route path="bovines/:id" element={<BovineDetail />} />
-                                      <Route path="bovines/:id/edit" element={<BovineForm />} />
-                                      
-                                      {/* Gestión de salud */}
-                                      <Route path="health" element={<Health />} />
-                                      <Route path="health/record" element={<HealthRecord />} />
-                                      <Route path="health/vaccines" element={<VaccineSchedule />} />
-                                      
-                                      {/* Gestión de producción */}
-                                      <Route path="production" element={<Production />} />
-                                      <Route path="production/milk" element={<MilkProduction />} />
-                                      
-                                      {/* Gestión de reproducción */}
-                                      <Route path="breeding" element={<Breeding />} />
-                                      <Route path="breeding/record" element={<BreedingRecord />} />
-                                      
-                                      {/* Gestión de inventario */}
-                                      <Route path="inventory" element={<Inventory />} />
-                                      <Route path="inventory/:id" element={<InventoryItem />} />
-                                      
-                                      {/* Gestión financiera */}
-                                      <Route path="finance" element={<Finance />} />
-                                      <Route path="finance/record" element={<FinanceRecord />} />
-                                      
-                                      {/* Reportes */}
-                                      <Route path="reports" element={<Reports />} />
-                                      <Route path="reports/custom" element={<CustomReports />} />
-                                      
-                                      {/* Calendario y ubicación */}
-                                      <Route path="calendar" element={<Calendar />} />
-                                      <Route path="location" element={<Location />} />
-                                      
-                                      {/* Configuraciones */}
-                                      <Route path="settings">
-                                        <Route path="profile" element={<Profile />} />
-                                        <Route path="ranch" element={<RanchSettings />} />
-                                        <Route path="users" element={<UserManagement />} />
-                                        <Route path="system" element={<SystemSettings />} />
-                                      </Route>
-                                      
-                                      {/* Página 404 para rutas no encontradas */}
-                                      <Route path="*" element={<NotFound />} />
-                                    </Routes>
-                                  </Suspense>
-                                </Layout>
-                              </ProtectedRoute>
-                            } 
-                          />
-                        </Routes>
-                      </AnimatePresence>
+                {/* Configuración de React Hot Toast */}
+                <Toaster
+                  position="top-right"
+                  reverseOrder={false}
+                  gutter={8}
+                  containerClassName=""
+                  containerStyle={{}}
+                  toastOptions={{
+                    // Configuración por defecto para todos los toast
+                    duration: 4000,
+                    style: {
+                      background: '#363636',
+                      color: '#fff',
+                    },
+                    
+                    // Configuración específica por tipo
+                    success: {
+                      duration: 3000,
+                      theme: {
+                        primary: 'green',
+                        secondary: 'black',
+                      },
+                    },
+                    error: {
+                      duration: 5000,
+                      theme: {
+                        primary: 'red',
+                        secondary: 'black',
+                      },
+                    },
+                  }}
+                />
 
-                      {/* Toaster para notificaciones globales */}
-                      <Toaster
-                        position="top-right"
-                        reverseOrder={false}
-                        gutter={8}
-                        containerClassName=""
-                        containerStyle={{}}
-                        toastOptions={{
-                          // Configuración de toast para el sistema ganadero
-                          className: '',
-                          duration: 4000,
-                          style: {
-                            background: 'var(--bg-card)',
-                            color: 'var(--text-primary)',
-                            border: '1px solid var(--border-primary)',
-                            borderRadius: 'var(--radius-lg)',
-                            fontSize: '14px',
-                            fontFamily: 'var(--font-family-sans)',
-                            boxShadow: 'var(--shadow-md)',
-                          },
-                          success: {
-                            duration: 3000,
-                            iconTheme: {
-                              primary: 'var(--color-success-500)',
-                              secondary: 'white',
-                            },
-                          },
-                          error: {
-                            duration: 5000,
-                            iconTheme: {
-                              primary: 'var(--color-error-500)',
-                              secondary: 'white',
-                            },
-                          },
-                          loading: {
-                            duration: Infinity,
-                          },
-                        }}
-                      />
-                    </div>
-                  </Router>
-                </DataProvider>
+                {/* React Query DevTools solo en desarrollo */}
+                {process.env.NODE_ENV === 'development' && (
+                  <Suspense fallback={null}>
+                    {/* Lazy load para evitar incluir en build de producción */}
+                    {React.lazy(() => 
+                      import('@tanstack/react-query-devtools').then(module => ({
+                        default: module.ReactQueryDevtools
+                      }))
+                    )}
+                  </Suspense>
+                )}
               </NotificationProvider>
-            </AuthProvider>
+            </DataProvider>
           </ThemeProvider>
-
-          {/* React Query DevTools - Solo en desarrollo */}
-          {process.env.NODE_ENV === 'development' && (
-            <ReactQueryDevtools 
-              initialIsOpen={false} 
-              position="bottom-right"
-              toggleButtonProps={{
-                style: {
-                  marginLeft: '5px',
-                  transform: 'none',
-                  color: 'var(--text-primary)',
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-primary)',
-                  borderRadius: 'var(--radius-lg)',
-                }
-              }}
-            />
-          )}
-        </QueryClientProvider>
-      </HelmetProvider>
+        </AuthProvider>
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 };
