@@ -1,1 +1,378 @@
-// Placeholder content for index.html
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <!-- Configuración básica del documento -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  <!-- Información principal de la aplicación -->
+  <title>Sistema de Gestión de Bovinos - Tecnología para Ganaderos</title>
+  <meta name="description" content="Sistema integral para la gestión de bovinos, control de salud, producción lechera, reproducción y finanzas del rancho. Tecnología avanzada para ganaderos modernos." />
+  <meta name="keywords" content="gestión de bovinos, ganado, vacas, producción lechera, salud animal, reproducción bovina, finanzas ganaderas, rancho, ganadería, veterinaria, agricultura" />
+  <meta name="author" content="Sistema de Gestión de Bovinos" />
+  
+  <!-- Configuración de idioma y región -->
+  <meta name="language" content="Spanish" />
+  <meta name="geo.region" content="MX" />
+  <meta name="geo.country" content="Mexico" />
+  
+  <!-- Configuración de robots y SEO -->
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="googlebot" content="index, follow" />
+  <meta name="revisit-after" content="7 days" />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bovinemanagement.com/" />
+  <meta property="og:title" content="Sistema de Gestión de Bovinos - Tecnología para Ganaderos" />
+  <meta property="og:description" content="Gestiona tu ganado de manera inteligente con nuestro sistema integral. Control de salud, producción, reproducción y finanzas en una sola plataforma." />
+  <meta property="og:image" content="/images/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Sistema de Gestión de Bovinos - Dashboard principal" />
+  <meta property="og:site_name" content="Sistema de Gestión de Bovinos" />
+  <meta property="og:locale" content="es_MX" />
+  
+  <!-- Twitter Card -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://bovinemanagement.com/" />
+  <meta property="twitter:title" content="Sistema de Gestión de Bovinos - Tecnología para Ganaderos" />
+  <meta property="twitter:description" content="Gestiona tu ganado de manera inteligente con nuestro sistema integral. Control de salud, producción, reproducción y finanzas." />
+  <meta property="twitter:image" content="/images/twitter-card.jpg" />
+  <meta property="twitter:image:alt" content="Sistema de Gestión de Bovinos - Interfaz moderna" />
+  
+  <!-- Configuración PWA y Mobile -->
+  <meta name="application-name" content="Gestión Bovinos" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Gestión Bovinos" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="msapplication-TileColor" content="#3B82F6" />
+  <meta name="msapplication-config" content="/browserconfig.xml" />
+  
+  <!-- Theme Colors para diferentes dispositivos -->
+  <meta name="theme-color" content="#3B82F6" />
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#3B82F6" />
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1E40AF" />
+  
+  <!-- Íconos y favicons -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48x48.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-chrome-192x192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/icons/android-chrome-512x512.png" />
+  
+  <!-- Apple Touch Icons -->
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-touch-icon-57x57.png" />
+  <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-touch-icon-60x60.png" />
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-touch-icon-72x72.png" />
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-touch-icon-76x76.png" />
+  <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-touch-icon-114x114.png" />
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch-icon-120x120.png" />
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-touch-icon-144x144.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch-icon-152x152.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon-180x180.png" />
+  
+  <!-- Manifest PWA -->
+  <link rel="manifest" href="/manifest.json" />
+  
+  <!-- Preconexiones DNS para optimización -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://api.bovinemanagement.com" />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+  
+  <!-- Precargar recursos críticos -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" /></noscript>
+  
+  <!-- DNS Prefetch para recursos externos -->
+  <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+  <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+  <link rel="dns-prefetch" href="//api.bovinemanagement.com" />
+  <link rel="dns-prefetch" href="//unpkg.com" />
+  
+  <!-- Configuración de seguridad -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://unpkg.com;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    font-src 'self' https://fonts.gstatic.com;
+    img-src 'self' data: https: blob:;
+    connect-src 'self' https://api.bovinemanagement.com wss://api.bovinemanagement.com;
+    media-src 'self' blob:;
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+    frame-ancestors 'none';
+  " />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+  <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="Permissions-Policy" content="
+    camera=self,
+    microphone=self,
+    geolocation=self,
+    notifications=self,
+    persistent-storage=self,
+    push=self
+  " />
+  
+  <!-- Configuración de caché -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  
+  <!-- Structured Data para SEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Sistema de Gestión de Bovinos",
+    "description": "Sistema integral para la gestión de bovinos, control de salud, producción lechera, reproducción y finanzas del rancho",
+    "url": "https://bovinemanagement.com",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web Browser",
+    "offers": {
+      "@type": "Offer",
+      "category": "Software de Gestión Ganadera"
+    },
+    "featureList": [
+      "Gestión de bovinos",
+      "Control de salud animal",
+      "Producción lechera",
+      "Reproducción bovina",
+      "Finanzas ganaderas",
+      "Geolocalización",
+      "Reportes automatizados"
+    ],
+    "screenshot": "https://bovinemanagement.com/images/screenshot.jpg",
+    "author": {
+      "@type": "Organization",
+      "name": "Sistema de Gestión de Bovinos"
+    }
+  }
+  </script>
+  
+  <!-- Google Analytics (cuando se configure) -->
+  <!-- gtag('config', 'GA_MEASUREMENT_ID'); -->
+  
+  <!-- Configuración inicial de tema para evitar flash -->
+  <script>
+    (function() {
+      // Detectar preferencia de tema del sistema
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      // Obtener tema guardado del usuario
+      const savedTheme = localStorage.getItem('app_theme');
+      // Determinar tema inicial
+      const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+      
+      // Aplicar tema inmediatamente para evitar flash
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+      
+      // Configurar color de theme-color dinámicamente
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', theme === 'dark' ? '#1E40AF' : '#3B82F6');
+      }
+    })();
+  </script>
+  
+  <!-- Configuración de loading inicial -->
+  <style>
+    /* Estilos críticos inline para loading inicial */
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #3B82F6 0%, #10B981 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: white;
+      opacity: 1;
+      transition: opacity 0.5s ease-out;
+    }
+    
+    .loading-screen.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+    
+    .loading-logo {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 24px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .loading-text {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    
+    .loading-subtitle {
+      font-size: 14px;
+      opacity: 0.8;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    .loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Ocultar loading cuando React se haya cargado */
+    #root:not(:empty) ~ .loading-screen {
+      display: none;
+    }
+    
+    /* Estilos para no-script fallback */
+    .noscript-warning {
+      background-color: #FEF2F2;
+      border: 1px solid #FECACA;
+      color: #991B1B;
+      padding: 16px;
+      margin: 16px;
+      border-radius: 8px;
+      text-align: center;
+      font-family: system-ui, sans-serif;
+    }
+  </style>
+</head>
+
+<body class="h-full antialiased">
+  <!-- Mensaje para usuarios sin JavaScript -->
+  <noscript>
+    <div class="noscript-warning">
+      <h2>🐄 JavaScript Requerido</h2>
+      <p>
+        El Sistema de Gestión de Bovinos requiere JavaScript para funcionar correctamente. 
+        Por favor, habilita JavaScript en tu navegador y recarga la página.
+      </p>
+      <p>
+        <strong>Características que necesitan JavaScript:</strong><br>
+        • Gestión en tiempo real de bovinos<br>
+        • Mapas interactivos con geolocalización<br>
+        • Gráficos de producción y salud<br>
+        • Sincronización de datos<br>
+        • Notificaciones automáticas
+      </p>
+    </div>
+  </noscript>
+
+  <!-- Skip link para accesibilidad -->
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 bg-blue-600 text-white px-4 py-2 z-50">
+    Saltar al contenido principal
+  </a>
+
+  <!-- Contenedor principal de React -->
+  <div id="root" role="main" aria-label="Aplicación de Sistema de Gestión de Bovinos"></div>
+
+  <!-- Pantalla de carga inicial -->
+  <div class="loading-screen" id="initial-loading">
+    <!-- Logo del sistema (SVG inline para carga rápida) -->
+    <svg class="loading-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="45" stroke="white" stroke-width="4" fill="none" opacity="0.3"/>
+      <path d="M30 45C30 35 35 30 45 30C55 30 60 35 60 45V55C60 65 55 70 45 70C35 70 30 65 30 55V45Z" fill="white"/>
+      <circle cx="40" cy="42" r="3" fill="currentColor" opacity="0.7"/>
+      <circle cx="55" cy="42" r="3" fill="currentColor" opacity="0.7"/>
+      <path d="M42 52C42 54 44 56 47 56C50 56 52 54 52 52" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M35 25C35 20 40 15 50 15C60 15 65 20 65 25" stroke="white" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    
+    <div class="loading-text">Sistema de Gestión de Bovinos</div>
+    <div class="loading-subtitle">Cargando tecnología para ganaderos...</div>
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- Script para ocultar loading cuando React esté listo -->
+  <script>
+    // Ocultar pantalla de loading después de que React se haya montado
+    function hideLoadingScreen() {
+      const loadingScreen = document.getElementById('initial-loading');
+      if (loadingScreen) {
+        loadingScreen.classList.add('fade-out');
+        setTimeout(() => {
+          loadingScreen.remove();
+        }, 500);
+      }
+    }
+
+    // Verificar cuando React se haya montado
+    const observer = new MutationObserver((mutations) => {
+      const root = document.getElementById('root');
+      if (root && root.children.length > 0) {
+        hideLoadingScreen();
+        observer.disconnect();
+      }
+    });
+
+    // Observar cambios en el elemento root
+    observer.observe(document.getElementById('root'), {
+      childList: true,
+      subtree: true
+    });
+
+    // Fallback: ocultar loading después de 10 segundos máximo
+    setTimeout(hideLoadingScreen, 10000);
+
+    // Configurar service worker cuando esté disponible
+    if ('serviceWorker' in navigator && 'production' === 'production') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('SW registered: ', registration);
+          })
+          .catch(registrationError => {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
+  </script>
+
+  <!-- Configuración de analytics y tracking (placeholder) -->
+  <!-- Google Analytics -->
+  <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script> -->
+  <!-- 
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'GA_MEASUREMENT_ID');
+  </script>
+  -->
+
+</body>
+</html>

@@ -1,1 +1,571 @@
-// Placeholder content for index.css
+/**
+ * index.css - Punto de entrada de estilos del sistema de gestión de bovinos
+ * Importación de Tailwind CSS, estilos globales y configuraciones base
+ */
+
+/* ============== TAILWIND CSS - IMPORTACIONES BASE ============== */
+
+/* Importar directivas base de Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============== ESTILOS GLOBALES DEL SISTEMA ============== */
+
+/* Importar estilos globales personalizados */
+@import './styles/globals.css';
+
+/* ============== CONFIGURACIONES ESPECÍFICAS DE TAILWIND ============== */
+
+@layer base {
+  /* Configuración de fuentes personalizadas para el sistema ganadero */
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700;800;900&display=swap');
+  }
+
+  @font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+  }
+
+  /* Configuración base del HTML y Body */
+  html {
+    /* Configuración de scroll personalizado para el sistema */
+    scroll-behavior: smooth;
+    scroll-padding-top: 4rem; /* Compensar header fijo */
+    
+    /* Mejorar renderizado de texto */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    
+    /* Configuración de overflow para mobile */
+    overflow-x: hidden;
+    
+    /* Soporte para color scheme */
+    color-scheme: light dark;
+  }
+
+  body {
+    /* Configuración de tipografía base */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-feature-settings: 'cv11', 'ss01';
+    font-variation-settings: 'opsz' 32;
+    
+    /* Configuración de colores dinámicos */
+    background-color: theme('colors.gray.50');
+    color: theme('colors.gray.900');
+    
+    /* Transiciones suaves para cambios de tema */
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+    
+    /* Configuración para dispositivos móviles */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    
+    /* Configuración de overflow */
+    overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
+  }
+
+  /* Configuración para tema oscuro */
+  .dark body {
+    background-color: theme('colors.gray.900');
+    color: theme('colors.gray.50');
+  }
+
+  /* Configuración de headings con Tailwind */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: theme('fontWeight.semibold');
+    line-height: theme('lineHeight.tight');
+    letter-spacing: theme('letterSpacing.tight');
+  }
+
+  /* Configuración de enlaces */
+  a {
+    color: theme('colors.blue.600');
+    text-decoration: none;
+    transition: color 0.15s ease-in-out;
+  }
+
+  a:hover {
+    color: theme('colors.blue.700');
+  }
+
+  .dark a {
+    color: theme('colors.blue.400');
+  }
+
+  .dark a:hover {
+    color: theme('colors.blue.300');
+  }
+
+  /* Configuración de elementos de formulario */
+  input, textarea, select {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+  }
+
+  /* Configuración de botones */
+  button {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    cursor: pointer;
+  }
+
+  /* Configuración de elementos multimedia */
+  img, video, canvas, svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Configuración de tablas */
+  table {
+    border-collapse: collapse;
+    border-spacing: 0;
+  }
+
+  /* Configuración de listas */
+  ul, ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* Configuración de elementos interactivos */
+  [role="button"], button, input, select, textarea {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+
+  /* Focus visible para accesibilidad */
+  :focus-visible {
+    outline: 2px solid theme('colors.blue.500');
+    outline-offset: 2px;
+    border-radius: theme('borderRadius.sm');
+  }
+}
+
+@layer components {
+  /* ============== COMPONENTES REUTILIZABLES ============== */
+  
+  /* Componente de contenedor principal */
+  .main-container {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Componente de card base */
+  .card {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-all duration-200;
+  }
+
+  .card-hover {
+    @apply hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600;
+  }
+
+  /* Componente de botón primario */
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Componente de botón secundario */
+  .btn-secondary {
+    @apply bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-medium py-2 px-4 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Componente de input base */
+  .input-base {
+    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200;
+  }
+
+  /* Componente de badge */
+  .badge {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+  }
+
+  .badge-primary {
+    @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200;
+  }
+
+  .badge-success {
+    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+  }
+
+  .badge-warning {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
+  }
+
+  .badge-error {
+    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+  }
+
+  /* Componente de sidebar */
+  .sidebar-item {
+    @apply flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200;
+  }
+
+  .sidebar-item-active {
+    @apply bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200;
+  }
+
+  .sidebar-item-inactive {
+    @apply text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100;
+  }
+
+  /* Componente de tabla */
+  .table-container {
+    @apply overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg;
+  }
+
+  .table-base {
+    @apply min-w-full divide-y divide-gray-300 dark:divide-gray-600;
+  }
+
+  .table-header {
+    @apply bg-gray-50 dark:bg-gray-800;
+  }
+
+  .table-header-cell {
+    @apply px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider;
+  }
+
+  .table-body {
+    @apply bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700;
+  }
+
+  .table-row {
+    @apply hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200;
+  }
+
+  .table-cell {
+    @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100;
+  }
+
+  /* Componente de modal */
+  .modal-overlay {
+    @apply fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-75 transition-opacity;
+  }
+
+  .modal-container {
+    @apply fixed inset-0 z-10 overflow-y-auto;
+  }
+
+  .modal-content {
+    @apply flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0;
+  }
+
+  .modal-panel {
+    @apply relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 text-left shadow-xl transition-all;
+  }
+}
+
+@layer utilities {
+  /* ============== UTILIDADES PERSONALIZADAS ============== */
+  
+  /* Utilidades de scroll personalizado */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.gray.400') theme('colors.gray.200');
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: theme('colors.gray.200');
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: theme('colors.gray.400');
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: theme('colors.gray.500');
+  }
+
+  .dark .scrollbar-thin {
+    scrollbar-color: theme('colors.gray.600') theme('colors.gray.800');
+  }
+
+  .dark .scrollbar-thin::-webkit-scrollbar-track {
+    background: theme('colors.gray.800');
+  }
+
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: theme('colors.gray.600');
+  }
+
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: theme('colors.gray.500');
+  }
+
+  /* Utilidades de gradient para el tema ganadero */
+  .gradient-bovine {
+    background: linear-gradient(135deg, theme('colors.green.400'), theme('colors.blue.500'));
+  }
+
+  .gradient-pasture {
+    background: linear-gradient(135deg, theme('colors.green.300'), theme('colors.green.600'));
+  }
+
+  .gradient-barn {
+    background: linear-gradient(135deg, theme('colors.red.400'), theme('colors.red.700'));
+  }
+
+  .gradient-milk {
+    background: linear-gradient(135deg, theme('colors.gray.100'), theme('colors.blue.200'));
+  }
+
+  /* Utilidades de animación de entrada */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-slide-down {
+    animation: slideDown 0.3s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+
+  /* Utilidades de layout responsivo */
+  .container-responsive {
+    @apply w-full mx-auto px-4 sm:px-6 lg:px-8;
+    max-width: min(100%, 1200px);
+  }
+
+  /* Utilidades de espaciado del sistema ganadero */
+  .spacing-bovine {
+    @apply space-y-6 lg:space-y-8;
+  }
+
+  /* Utilidades de texto */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Utilidades de shadow personalizado */
+  .shadow-bovine {
+    box-shadow: 0 4px 14px 0 rgba(34, 197, 94, 0.15);
+  }
+
+  .shadow-barn {
+    box-shadow: 0 4px 14px 0 rgba(220, 38, 38, 0.15);
+  }
+
+  .shadow-milk {
+    box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.15);
+  }
+
+  /* Utilidades de backdrop blur */
+  .backdrop-blur-xs {
+    backdrop-filter: blur(2px);
+  }
+
+  /* Utilidades para print styles */
+  @media print {
+    .print-hidden {
+      display: none !important;
+    }
+
+    .print-visible {
+      display: block !important;
+    }
+
+    .print-break-before {
+      page-break-before: always;
+    }
+
+    .print-break-after {
+      page-break-after: always;
+    }
+
+    .print-no-break {
+      page-break-inside: avoid;
+    }
+  }
+
+  /* Utilidades para reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .motion-reduce-override {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+
+  /* Utilidades para high contrast */
+  @media (prefers-contrast: high) {
+    .high-contrast-border {
+      border-width: 2px;
+      border-color: theme('colors.gray.900');
+    }
+
+    .dark .high-contrast-border {
+      border-color: theme('colors.gray.100');
+    }
+  }
+}
+
+/* ============== KEYFRAMES DE ANIMACIÓN ============== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============== CONFIGURACIÓN PARA LIBRERÍAS EXTERNAS ============== */
+
+/* Estilos para React Hot Toast */
+.react-hot-toast-container {
+  z-index: 9999;
+}
+
+/* Estilos para React Select */
+.react-select__control {
+  @apply border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800;
+}
+
+.react-select__control--is-focused {
+  @apply border-blue-500 ring-2 ring-blue-500 ring-opacity-20;
+  box-shadow: none;
+}
+
+.react-select__menu {
+  @apply bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600;
+}
+
+.react-select__option {
+  @apply text-gray-900 dark:text-gray-100;
+}
+
+.react-select__option--is-focused {
+  @apply bg-gray-100 dark:bg-gray-700;
+}
+
+.react-select__option--is-selected {
+  @apply bg-blue-600 text-white;
+}
+
+/* Estilos para React Datepicker */
+.react-datepicker {
+  @apply bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg;
+}
+
+.react-datepicker__header {
+  @apply bg-gray-50 dark:bg-gray-700 border-b border-gray-300 dark:border-gray-600;
+}
+
+.react-datepicker__day {
+  @apply text-gray-900 dark:text-gray-100 hover:bg-blue-100 dark:hover:bg-blue-900;
+}
+
+.react-datepicker__day--selected {
+  @apply bg-blue-600 text-white;
+}
+
+/* Estilos para Leaflet Maps */
+.leaflet-container {
+  @apply rounded-lg;
+}
+
+.leaflet-popup-content-wrapper {
+  @apply bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100;
+}
+
+/* Estilos para Spline 3D */
+.spline-container {
+  @apply w-full h-full rounded-lg overflow-hidden;
+}
+
+/* ============== ESTILOS PARA ACCESIBILIDAD ============== */
+
+/* Skip links para navegación por teclado */
+.skip-link {
+  @apply absolute left-0 top-0 z-50 -translate-y-full bg-blue-600 text-white px-4 py-2 rounded-b-md transition-transform focus:translate-y-0;
+}
+
+/* Estilos para usuarios que prefieren menos movimiento */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Estilos para modo de alto contraste */
+@media (prefers-contrast: high) {
+  .card {
+    @apply border-2 border-gray-900 dark:border-gray-100;
+  }
+  
+  .btn-primary {
+    @apply border-2 border-blue-900;
+  }
+  
+  .input-base {
+    @apply border-2 border-gray-900 dark:border-gray-100;
+  }
+}

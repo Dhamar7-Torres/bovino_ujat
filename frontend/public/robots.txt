@@ -1,1 +1,237 @@
-// Placeholder content for robots.txt
+# robots.txt - Sistema de Gestión de Bovinos
+# Configuración de acceso para robots de búsqueda y crawlers web
+# Optimizado para aplicaciones web de gestión ganadera
+
+# ============== CONFIGURACIÓN GENERAL ==============
+
+# Permitir acceso a todos los robots por defecto
+User-agent: *
+Allow: /
+
+# ============== PÁGINAS PÚBLICAS PERMITIDAS ==============
+
+# Páginas de información pública
+Allow: /about
+Allow: /features
+Allow: /pricing
+Allow: /contact
+Allow: /help
+Allow: /docs
+Allow: /blog
+Allow: /news
+
+# Páginas de autenticación (acceso limitado)
+Allow: /login
+Allow: /register
+Allow: /forgot-password
+
+# Recursos estáticos permitidos
+Allow: /images/
+Allow: /icons/
+Allow: /screenshots/
+Allow: /assets/
+Allow: /static/
+
+# Manifest y archivos PWA
+Allow: /manifest.json
+Allow: /sw.js
+Allow: /browserconfig.xml
+
+# ============== ÁREAS RESTRINGIDAS ==============
+
+# Panel de administración y gestión (contenido privado)
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /bovines
+Disallow: /health
+Disallow: /production
+Disallow: /breeding
+Disallow: /inventory
+Disallow: /finance
+Disallow: /reports
+Disallow: /calendar
+Disallow: /location
+Disallow: /settings
+
+# APIs y endpoints de backend
+Disallow: /api/
+Disallow: /graphql
+Disallow: /webhooks/
+
+# Archivos de configuración y sistema
+Disallow: /.env
+Disallow: /.git/
+Disallow: /node_modules/
+Disallow: /dist/
+Disallow: /build/
+Disallow: /tmp/
+Disallow: /temp/
+Disallow: /cache/
+Disallow: /logs/
+
+# Archivos sensibles del sistema ganadero
+Disallow: /uploads/
+Disallow: /exports/
+Disallow: /backups/
+Disallow: /reports/private/
+Disallow: /data/
+
+# Rutas de desarrollo y testing
+Disallow: /dev/
+Disallow: /test/
+Disallow: /staging/
+Disallow: /preview/
+
+# ============== CONFIGURACIÓN ESPECÍFICA POR ROBOT ==============
+
+# Google Bot - Configuración optimizada
+User-agent: Googlebot
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /uploads/
+# Permitir indexación de imágenes públicas del sistema
+Allow: /images/public/
+Allow: /screenshots/
+# Crawl delay para no sobrecargar el servidor
+Crawl-delay: 1
+
+# Bing Bot - Microsoft Search
+User-agent: Bingbot
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /uploads/
+Crawl-delay: 2
+
+# Baidu Spider - Búsqueda en China (si aplicable)
+User-agent: Baiduspider
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /uploads/
+Crawl-delay: 3
+
+# Yandex Bot - Búsqueda en Rusia (si aplicable)
+User-agent: YandexBot
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /uploads/
+Crawl-delay: 2
+
+# DuckDuckGo Bot
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /uploads/
+
+# Facebook Bot - Para Open Graph
+User-agent: facebookexternalhit
+Allow: /
+Allow: /images/og/
+Allow: /screenshots/
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /uploads/private/
+
+# Twitter Bot - Para Twitter Cards
+User-agent: Twitterbot
+Allow: /
+Allow: /images/twitter/
+Allow: /screenshots/
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /uploads/private/
+
+# LinkedIn Bot
+User-agent: LinkedInBot
+Allow: /
+Allow: /images/og/
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /uploads/
+
+# WhatsApp Bot - Para previews de links
+User-agent: WhatsApp
+Allow: /
+Allow: /images/og/
+Disallow: /dashboard
+Disallow: /api/
+
+# ============== BOTS NO DESEADOS ==============
+
+# Bloquear bots de scraping agresivos
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# Bloquear bots maliciosos conocidos
+User-agent: BadBot
+Disallow: /
+
+User-agent: Scrapy
+Disallow: /
+
+User-agent: spam
+Disallow: /
+
+User-agent: spambot
+Disallow: /
+
+# ============== CONFIGURACIÓN DE ARCHIVOS SITEMAP ==============
+
+# Sitemap principal (cuando esté implementado)
+Sitemap: https://bovinemanagement.com/sitemap.xml
+
+# Sitemaps específicos por sección
+Sitemap: https://bovinemanagement.com/sitemap-static.xml
+Sitemap: https://bovinemanagement.com/sitemap-blog.xml
+Sitemap: https://bovinemanagement.com/sitemap-images.xml
+
+# ============== NOTAS Y COMENTARIOS ==============
+
+# Este archivo robots.txt está configurado específicamente para:
+# - Sistema de Gestión de Bovinos
+# - Proteger datos sensibles de ganadería
+# - Permitir indexación de contenido público
+# - Optimizar crawling para SEO
+# 
+# Última actualización: 2024
+# 
+# Para más información sobre el sistema:
+# - Sitio web: https://bovinemanagement.com
+# - Documentación: https://bovinemanagement.com/docs
+# - Soporte: https://bovinemanagement.com/support
+#
+# Contacto técnico para crawlers:
+# Email: seo@bovinemanagement.com
+# 
+# Política de robots personalizada para aplicaciones ganaderas:
+# - Respetamos un crawl-delay mínimo de 1 segundo
+# - Protegemos datos privados de productores ganaderos
+# - Facilitamos indexación de contenido educativo público
+# - Cumplimos con estándares internacionales de robots.txt
+
+# ============== DIRECTIVAS ADICIONALES ==============
+
+# Configuración de host preferido (cuando aplique)
+# Host: bovinemanagement.com
+
+# Request-rate para control de velocidad de crawling
+# Request-rate: 1/10s
+
+# Visit-time para horarios preferenciales de crawling
+# Visit-time: 0200-0600
+
+# Clean-param para URLs con parámetros dinámicos
+# Clean-param: utm_source&utm_medium&utm_campaign&session_id&user_id
