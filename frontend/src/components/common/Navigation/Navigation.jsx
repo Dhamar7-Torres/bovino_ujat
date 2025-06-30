@@ -1,4 +1,7 @@
-// Componente de navegación lateral con menús colapsables y animaciones
+/**
+ * Navigation.jsx - Componente de navegación lateral para el sistema de gestión de bovinos
+ * Navegación colapsable con menús organizados, badges de notificación y acceso rápido
+ */
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,21 +30,78 @@ import {
   TrendingUp,
   Shield,
   Database,
-  LogOut
+  LogOut,
+  Search,
+  Plus,
+  Activity,
+  Target,
+  Award,
+  Clock,
+  Star,
+  Bookmark,
+  Filter,
+  Edit,
+  Trash2,
+  Archive,
+  Download,
+  Upload,
+  Share2,
+  Eye,
+  EyeOff,
+  Volume2,
+  VolumeX,
+  Globe,
+  Smartphone,
+  Monitor,
+  Wifi,
+  WifiOff,
+  Zap,
+  AlertTriangle,
+  CheckCircle,
+  Info,
+  AlertCircle,
+  UserCheck,
+  Building,
+  Truck,
+  Scale,
+  Thermometer,
+  Droplets,
+  Sun,
+  Moon,
+  CloudRain,
+  Wind,
+  Layers,
+  Grid3X3,
+  List,
+  MoreHorizontal,
+  Folder,
+  FolderOpen,
+  ChevronLeft,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 
 const Navigation = ({ 
   collapsed = false, 
   onToggleCollapse,
   darkMode = false,
-  user = null 
+  user = null,
+  layout = 'desktop'
 }) => {
   
   // Estados para control de navegación
   const [expandedMenus, setExpandedMenus] = useState(['main']);
   const [hoveredItem, setHoveredItem] = useState(null);
   const [showTooltip, setShowTooltip] = useState(null);
-  
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredMenus, setFilteredMenus] = useState([]);
+  const [favoriteItems, setFavoriteItems] = useState(['dashboard', 'bovines', 'health']);
+  const [badges, setBadges] = useState({
+    health: 5,
+    alerts: 3,
+    reports: 2
+  });
+
   const location = useLocation();
 
   // Configuración de menús de navegación
@@ -56,7 +116,8 @@ const Navigation = ({
           title: 'Dashboard',
           path: '/',
           icon: Home,
-          description: 'Vista general del sistema'
+          description: 'Vista general del sistema',
+          keywords: ['inicio', 'principal', 'resumen', 'overview']
         },
         {
           id: 'calendar',
@@ -64,7 +125,8 @@ const Navigation = ({
           path: '/calendar',
           icon: Calendar,
           description: 'Eventos y programación',
-          badge: '3'
+          badge: badges.calendar || 3,
+          keywords: ['eventos', 'fechas', 'programación', 'agenda']
         }
       ]
     },
@@ -78,38 +140,51 @@ const Navigation = ({
           title: 'Bovinos',
           path: '/bovines',
           icon: Cow,
-          description: 'Gestión de ganado',
-          submenu: [
-            { title: 'Ver Todos', path: '/bovines' },
-            { title: 'Agregar Bovino', path: '/bovines/add' },
-            { title: 'Importar', path: '/bovines/import' }
+          description: 'Gestión del ganado',
+          keywords: ['ganado', 'vacas', 'toros', 'animales'],
+          subItems: [
+            { id: 'bovines-list', title: 'Lista de Bovinos', path: '/bovines' },
+            { id: 'bovines-add', title: 'Agregar Bovino', path: '/bovines/new' },
+            { id: 'bovines-groups', title: 'Grupos', path: '/bovines/groups' }
           ]
         },
+        {
+          id: 'ranches',
+          title: 'Ranchos',
+          path: '/ranches',
+          icon: Building,
+          description: 'Gestión de instalaciones',
+          keywords: ['instalaciones', 'terrenos', 'parcelas']
+        }
+      ]
+    },
+    {
+      id: 'health',
+      title: 'Salud y Bienestar',
+      icon: Heart,
+      items: [
         {
           id: 'health',
-          title: 'Salud',
+          title: 'Control Sanitario',
           path: '/health',
-          icon: Heart,
-          description: 'Salud veterinaria',
-          submenu: [
-            { title: 'Estado General', path: '/health' },
-            { title: 'Vacunaciones', path: '/health/vaccinations' },
-            { title: 'Tratamientos', path: '/health/treatments' },
-            { title: 'Consultas', path: '/health/consultations' }
+          icon: Stethoscope,
+          description: 'Monitoreo de salud',
+          badge: badges.health || 5,
+          keywords: ['salud', 'veterinario', 'medicina', 'enfermedades'],
+          subItems: [
+            { id: 'health-records', title: 'Registros Médicos', path: '/health/records' },
+            { id: 'health-vaccines', title: 'Vacunación', path: '/health/vaccines' },
+            { id: 'health-treatments', title: 'Tratamientos', path: '/health/treatments' },
+            { id: 'health-alerts', title: 'Alertas', path: '/health/alerts', badge: badges.health }
           ]
         },
         {
-          id: 'reproduction',
-          title: 'Reproducción',
-          path: '/reproduction',
-          icon: Baby,
-          description: 'Gestión reproductiva',
-          submenu: [
-            { title: 'Servicios', path: '/reproduction/services' },
-            { title: 'Gestaciones', path: '/reproduction/pregnancies' },
-            { title: 'Partos', path: '/reproduction/births' },
-            { title: 'Crías', path: '/reproduction/calves' }
-          ]
+          id: 'nutrition',
+          title: 'Nutrición',
+          path: '/nutrition',
+          icon: Droplets,
+          description: 'Alimentación y suplementos',
+          keywords: ['alimentación', 'comida', 'suplementos', 'dieta']
         }
       ]
     },
@@ -123,56 +198,140 @@ const Navigation = ({
           title: 'Producción Lechera',
           path: '/production/milk',
           icon: Milk,
-          description: 'Registro de leche'
+          description: 'Control de producción de leche',
+          keywords: ['leche', 'ordeño', 'producción', 'litros']
         },
         {
-          id: 'meat-production',
-          title: 'Producción Cárnica',
-          path: '/production/meat',
-          icon: TrendingUp,
-          description: 'Registro de carne'
+          id: 'weight-control',
+          title: 'Control de Peso',
+          path: '/production/weight',
+          icon: Scale,
+          description: 'Seguimiento de peso del ganado',
+          keywords: ['peso', 'engorde', 'crecimiento', 'desarrollo']
         },
         {
-          id: 'quality-control',
+          id: 'quality',
           title: 'Control de Calidad',
           path: '/production/quality',
-          icon: Shield,
-          description: 'Análisis de calidad'
+          icon: Award,
+          description: 'Estándares de calidad',
+          keywords: ['calidad', 'estándares', 'certificación']
         }
       ]
     },
     {
-      id: 'management',
-      title: 'Administración',
-      icon: Database,
+      id: 'breeding',
+      title: 'Reproducción',
+      icon: Baby,
+      items: [
+        {
+          id: 'breeding',
+          title: 'Gestión Reproductiva',
+          path: '/breeding',
+          icon: Baby,
+          description: 'Control reproductivo',
+          keywords: ['reproducción', 'cría', 'gestación', 'partos'],
+          subItems: [
+            { id: 'breeding-cycles', title: 'Ciclos Reproductivos', path: '/breeding/cycles' },
+            { id: 'breeding-ai', title: 'Inseminación Artificial', path: '/breeding/ai' },
+            { id: 'breeding-pregnancies', title: 'Gestaciones', path: '/breeding/pregnancies' },
+            { id: 'breeding-births', title: 'Partos', path: '/breeding/births' }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'inventory',
+      title: 'Inventario',
+      icon: Package,
       items: [
         {
           id: 'inventory',
-          title: 'Inventario',
+          title: 'Gestión de Stock',
           path: '/inventory',
           icon: Package,
-          description: 'Medicamentos y suministros',
-          badge: 'Bajo'
-        },
-        {
-          id: 'finances',
-          title: 'Finanzas',
-          path: '/finances',
-          icon: DollarSign,
-          description: 'Gestión financiera',
-          submenu: [
-            { title: 'Ingresos', path: '/finances/income' },
-            { title: 'Gastos', path: '/finances/expenses' },
-            { title: 'Presupuestos', path: '/finances/budgets' },
-            { title: 'Reportes', path: '/finances/reports' }
+          description: 'Control de inventarios',
+          keywords: ['inventario', 'stock', 'almacén', 'productos'],
+          subItems: [
+            { id: 'inventory-feed', title: 'Alimentos', path: '/inventory/feed' },
+            { id: 'inventory-medicine', title: 'Medicamentos', path: '/inventory/medicine' },
+            { id: 'inventory-equipment', title: 'Equipos', path: '/inventory/equipment' },
+            { id: 'inventory-supplies', title: 'Suministros', path: '/inventory/supplies' }
           ]
-        },
+        }
+      ]
+    },
+    {
+      id: 'finance',
+      title: 'Finanzas',
+      icon: DollarSign,
+      items: [
+        {
+          id: 'finance',
+          title: 'Gestión Financiera',
+          path: '/finance',
+          icon: DollarSign,
+          description: 'Control financiero',
+          keywords: ['finanzas', 'dinero', 'gastos', 'ingresos'],
+          subItems: [
+            { id: 'finance-income', title: 'Ingresos', path: '/finance/income' },
+            { id: 'finance-expenses', title: 'Gastos', path: '/finance/expenses' },
+            { id: 'finance-budget', title: 'Presupuesto', path: '/finance/budget' },
+            { id: 'finance-reports', title: 'Reportes Financieros', path: '/finance/reports' }
+          ]
+        }
+      ]
+    },
+    {
+      id: 'reports',
+      title: 'Reportes y Análisis',
+      icon: FileText,
+      items: [
         {
           id: 'reports',
           title: 'Reportes',
           path: '/reports',
           icon: FileText,
-          description: 'Informes y estadísticas'
+          description: 'Análisis y reportes',
+          badge: badges.reports || 2,
+          keywords: ['reportes', 'análisis', 'estadísticas', 'datos'],
+          subItems: [
+            { id: 'reports-production', title: 'Producción', path: '/reports/production' },
+            { id: 'reports-health', title: 'Salud', path: '/reports/health' },
+            { id: 'reports-finance', title: 'Financieros', path: '/reports/finance' },
+            { id: 'reports-custom', title: 'Personalizados', path: '/reports/custom' }
+          ]
+        },
+        {
+          id: 'analytics',
+          title: 'Analytics',
+          path: '/analytics',
+          icon: TrendingUp,
+          description: 'Análisis avanzado',
+          keywords: ['análisis', 'métricas', 'kpi', 'dashboard']
+        }
+      ]
+    },
+    {
+      id: 'location',
+      title: 'Geolocalización',
+      icon: MapPin,
+      items: [
+        {
+          id: 'maps',
+          title: 'Mapas',
+          path: '/maps',
+          icon: MapPin,
+          description: 'Ubicación y mapas',
+          keywords: ['mapas', 'ubicación', 'gps', 'localización']
+        },
+        {
+          id: 'tracking',
+          title: 'Seguimiento',
+          path: '/tracking',
+          icon: Target,
+          description: 'Rastreo de ganado',
+          keywords: ['seguimiento', 'rastreo', 'monitoreo', 'ubicación']
         }
       ]
     },
@@ -186,54 +345,101 @@ const Navigation = ({
           title: 'Usuarios',
           path: '/users',
           icon: Users,
-          description: 'Gestión de usuarios'
-        },
-        {
-          id: 'locations',
-          title: 'Ubicaciones',
-          path: '/locations',
-          icon: MapPin,
-          description: 'Gestión de ranchos'
-        },
-        {
-          id: 'notifications',
-          title: 'Notificaciones',
-          path: '/notifications',
-          icon: Bell,
-          description: 'Configurar alertas'
+          description: 'Gestión de usuarios',
+          keywords: ['usuarios', 'permisos', 'roles', 'acceso']
         },
         {
           id: 'settings',
           title: 'Configuración',
           path: '/settings',
           icon: Settings,
-          description: 'Configuración del sistema'
+          description: 'Configuración del sistema',
+          keywords: ['configuración', 'ajustes', 'preferencias']
         },
         {
           id: 'help',
           title: 'Ayuda',
           path: '/help',
           icon: HelpCircle,
-          description: 'Documentación y soporte'
+          description: 'Centro de ayuda',
+          keywords: ['ayuda', 'soporte', 'documentación', 'tutorial']
         }
       ]
     }
   ];
 
-  // Animaciones
-  const sidebarVariants = {
-    expanded: {
-      width: '16rem',
-      transition: { duration: 0.3, ease: 'easeInOut' }
-    },
-    collapsed: {
-      width: '4rem',
-      transition: { duration: 0.3, ease: 'easeInOut' }
+  // Efectos
+  useEffect(() => {
+    // Filtrar menús basado en búsqueda
+    if (searchTerm.trim()) {
+      const filtered = navigationMenus.map(menu => ({
+        ...menu,
+        items: menu.items.filter(item => 
+          item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.keywords?.some(keyword => 
+            keyword.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+        )
+      })).filter(menu => menu.items.length > 0);
+      
+      setFilteredMenus(filtered);
+    } else {
+      setFilteredMenus(navigationMenus);
     }
+  }, [searchTerm]);
+
+  useEffect(() => {
+    // Auto-expandir menú actual
+    const currentMenu = navigationMenus.find(menu => 
+      menu.items.some(item => 
+        location.pathname === item.path || 
+        (item.subItems && item.subItems.some(sub => location.pathname === sub.path))
+      )
+    );
+    
+    if (currentMenu && !expandedMenus.includes(currentMenu.id)) {
+      setExpandedMenus(prev => [...prev, currentMenu.id]);
+    }
+  }, [location.pathname]);
+
+  // Funciones de manejo
+  const toggleMenu = (menuId) => {
+    setExpandedMenus(prev => 
+      prev.includes(menuId) 
+        ? prev.filter(id => id !== menuId)
+        : [...prev, menuId]
+    );
+  };
+
+  const toggleFavorite = (itemId) => {
+    setFavoriteItems(prev => 
+      prev.includes(itemId)
+        ? prev.filter(id => id !== itemId)
+        : [...prev, itemId]
+    );
+  };
+
+  const isActiveItem = (item) => {
+    if (location.pathname === item.path) return true;
+    if (item.subItems) {
+      return item.subItems.some(sub => location.pathname === sub.path);
+    }
+    return false;
+  };
+
+  const isActiveSubItem = (subItem) => {
+    return location.pathname === subItem.path;
+  };
+
+  // Configuración de animaciones
+  const sidebarVariants = {
+    expanded: { width: '16rem' },
+    collapsed: { width: '4rem' }
   };
 
   const menuItemVariants = {
-    hidden: { opacity: 0, x: -10 },
+    hidden: { opacity: 0, x: -20 },
     visible: { 
       opacity: 1, 
       x: 0,
@@ -243,372 +449,363 @@ const Navigation = ({
 
   const submenuVariants = {
     hidden: { 
-      opacity: 0, 
-      height: 0,
+      height: 0, 
+      opacity: 0,
       transition: { duration: 0.2 }
     },
     visible: { 
-      opacity: 1, 
-      height: 'auto',
-      transition: { duration: 0.3 }
-    }
-  };
-
-  const tooltipVariants = {
-    hidden: { opacity: 0, scale: 0.8, x: -10 },
-    visible: { 
-      opacity: 1, 
-      scale: 1, 
-      x: 0,
+      height: 'auto', 
+      opacity: 1,
       transition: { duration: 0.2 }
     }
   };
 
-  // Función para alternar menús expandidos
-  const toggleMenu = (menuId) => {
-    if (collapsed) return;
-    
-    setExpandedMenus(prev => 
-      prev.includes(menuId) 
-        ? prev.filter(id => id !== menuId)
-        : [...prev, menuId]
-    );
-  };
-
-  // Función para verificar si una ruta está activa
-  const isActiveRoute = (path) => {
-    if (path === '/' && location.pathname === '/') return true;
-    if (path !== '/' && location.pathname.startsWith(path)) return true;
-    return false;
-  };
-
-  // Función para verificar si un menú tiene rutas activas
-  const hasActiveRoute = (items) => {
-    return items.some(item => {
-      if (item.submenu) {
-        return item.submenu.some(subItem => isActiveRoute(subItem.path));
-      }
-      return isActiveRoute(item.path);
-    });
-  };
-
-  // Manejar hover para tooltips
-  const handleItemHover = (itemId, show) => {
-    if (collapsed) {
-      setShowTooltip(show ? itemId : null);
-    }
-  };
+  // Renderizar tooltip
+  const renderTooltip = (item) => (
+    <AnimatePresence>
+      {collapsed && showTooltip === item.id && (
+        <motion.div
+          className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg shadow-lg z-50 whitespace-nowrap"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          transition={{ duration: 0.15 }}
+        >
+          {item.title}
+          {item.description && (
+            <div className="text-xs text-gray-300 mt-1">
+              {item.description}
+            </div>
+          )}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 
   // Renderizar badge
-  const renderBadge = (badge) => {
-    if (!badge) return null;
-    
-    const isNumber = !isNaN(badge);
-    const badgeClasses = isNumber 
-      ? 'bg-red-500 text-white' 
-      : 'bg-yellow-500 text-yellow-900';
+  const renderBadge = (count) => {
+    if (!count || count === 0) return null;
     
     return (
-      <span className={`
-        px-2 py-0.5 text-xs font-medium rounded-full
-        ${badgeClasses}
-      `}>
-        {badge}
+      <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+        {count > 99 ? '99+' : count}
       </span>
     );
   };
 
-  // Renderizar item de navegación
-  const renderNavigationItem = (item, isSubmenu = false) => {
-    const IconComponent = item.icon;
-    const hasSubmenu = item.submenu && item.submenu.length > 0;
-    const isActive = isActiveRoute(item.path);
-    const [submenuExpanded, setSubmenuExpanded] = useState(isActive);
+  // Renderizar item de menú
+  const renderMenuItem = (item, isSubItem = false) => {
+    const active = isSubItem ? isActiveSubItem(item) : isActiveItem(item);
+    const isFavorite = favoriteItems.includes(item.id);
+    const hasSubItems = !isSubItem && item.subItems && item.subItems.length > 0;
+    const isExpanded = expandedMenus.includes(item.id);
 
-    const itemClasses = `
-      group flex items-center justify-between w-full p-3 rounded-lg transition-all duration-200
-      ${isSubmenu ? 'ml-4 text-sm' : ''}
-      ${isActive 
-        ? 'bg-blue-600 text-white shadow-md' 
-        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+    const baseClasses = `
+      relative flex items-center w-full text-left transition-all duration-200 rounded-lg
+      ${isSubItem ? 'pl-8 py-2' : 'p-3'}
+      ${active 
+        ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' 
+        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
       }
-      ${collapsed && !isSubmenu ? 'justify-center' : ''}
+      ${collapsed && !isSubItem ? 'justify-center' : ''}
     `;
 
     const content = (
-      <div className="flex items-center space-x-3 flex-1 min-w-0">
-        {IconComponent && (
-          <IconComponent className={`
-            flex-shrink-0
-            ${isSubmenu ? 'w-4 h-4' : 'w-5 h-5'}
-            ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-gray-700'}
-          `} />
-        )}
-        
-        <AnimatePresence>
-          {!collapsed && (
-            <motion.div
-              variants={menuItemVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              className="flex items-center justify-between w-full"
-            >
-              <div className="flex-1 min-w-0">
-                <span className="font-medium truncate">{item.title}</span>
-                {item.description && !isSubmenu && (
-                  <p className={`
-                    text-xs mt-0.5 truncate
-                    ${isActive ? 'text-blue-100' : 'text-gray-500'}
-                  `}>
-                    {item.description}
-                  </p>
-                )}
+      <motion.div
+        className={baseClasses}
+        variants={menuItemVariants}
+        whileHover={{ x: collapsed ? 0 : 2 }}
+        onMouseEnter={() => !collapsed && setHoveredItem(item.id)}
+        onMouseLeave={() => setHoveredItem(null)}
+      >
+        {/* Icono */}
+        <div className={`flex-shrink-0 ${collapsed ? '' : 'mr-3'}`}>
+          <item.icon 
+            size={20} 
+            className={active ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'} 
+          />
+        </div>
+
+        {/* Contenido del item */}
+        {!collapsed && (
+          <>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <span className="font-medium truncate">
+                  {item.title}
+                </span>
+                <div className="flex items-center gap-2">
+                  {/* Badge */}
+                  {item.badge && renderBadge(item.badge)}
+                  
+                  {/* Botón de favorito */}
+                  {!isSubItem && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleFavorite(item.id);
+                      }}
+                      className={`opacity-0 group-hover:opacity-100 transition-opacity ${
+                        isFavorite ? 'opacity-100' : ''
+                      }`}
+                    >
+                      <Star 
+                        size={14} 
+                        className={isFavorite ? 'text-yellow-500 fill-current' : 'text-gray-400'} 
+                      />
+                    </button>
+                  )}
+
+                  {/* Indicador de submenú */}
+                  {hasSubItems && (
+                    <ChevronRight 
+                      size={16} 
+                      className={`transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                    />
+                  )}
+                </div>
               </div>
               
-              <div className="flex items-center space-x-2">
-                {item.badge && renderBadge(item.badge)}
-                {hasSubmenu && (
-                  <ChevronDown className={`
-                    w-4 h-4 transition-transform duration-200
-                    ${submenuExpanded ? 'rotate-180' : ''}
-                    ${isActive ? 'text-white' : 'text-gray-400'}
-                  `} />
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    );
-
-    // Tooltip para modo colapsado
-    const tooltip = collapsed && showTooltip === item.id && (
-      <motion.div
-        variants={tooltipVariants}
-        initial="hidden"
-        animate="visible"
-        exit="hidden"
-        className="fixed left-16 bg-gray-900 text-white text-sm rounded-lg px-3 py-2 shadow-lg z-50 pointer-events-none"
-        style={{ 
-          top: hoveredItem?.offsetTop || 0,
-          transform: 'translateY(-50%)'
-        }}
-      >
-        {item.title}
-        {item.description && (
-          <p className="text-gray-300 text-xs mt-1">{item.description}</p>
+              {/* Descripción */}
+              {item.description && !isSubItem && (
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
+                  {item.description}
+                </div>
+              )}
+            </div>
+          </>
         )}
+
+        {/* Indicador de activo */}
+        {active && (
+          <motion.div
+            className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-r"
+            layoutId="activeIndicator"
+          />
+        )}
+
+        {/* Tooltip para modo colapsado */}
+        {renderTooltip(item)}
       </motion.div>
     );
 
-    if (hasSubmenu && !collapsed) {
+    if (hasSubItems) {
       return (
-        <div key={item.id}>
+        <div key={item.id} className="group">
           <button
-            onClick={() => setSubmenuExpanded(!submenuExpanded)}
-            className={itemClasses}
-            onMouseEnter={(e) => {
-              setHoveredItem(e.target);
-              handleItemHover(item.id, true);
-            }}
-            onMouseLeave={() => handleItemHover(item.id, false)}
+            onClick={() => toggleMenu(item.id)}
+            onMouseEnter={() => collapsed && setShowTooltip(item.id)}
+            onMouseLeave={() => setShowTooltip(null)}
+            className="w-full"
           >
             {content}
           </button>
-          
+
+          {/* Submenú */}
           <AnimatePresence>
-            {submenuExpanded && (
+            {isExpanded && !collapsed && (
               <motion.div
+                className="overflow-hidden"
                 variants={submenuVariants}
                 initial="hidden"
                 animate="visible"
                 exit="hidden"
-                className="overflow-hidden"
               >
-                <div className="space-y-1 mt-2">
-                  {item.submenu.map(subItem => (
+                <div className="py-1 space-y-1">
+                  {item.subItems.map(subItem => (
                     <Link
-                      key={subItem.path}
+                      key={subItem.id}
                       to={subItem.path}
-                      className={`
-                        block p-2 ml-8 text-sm rounded-lg transition-colors
-                        ${isActiveRoute(subItem.path)
-                          ? 'bg-blue-50 text-blue-700 font-medium'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                        }
-                      `}
+                      className="block"
                     >
-                      {subItem.title}
+                      {renderMenuItem(subItem, true)}
                     </Link>
                   ))}
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
-          
-          {tooltip}
         </div>
       );
     }
 
     return (
-      <div key={item.id} className="relative">
-        <Link
-          to={item.path}
-          className={itemClasses}
-          onMouseEnter={(e) => {
-            setHoveredItem(e.target);
-            handleItemHover(item.id, true);
-          }}
-          onMouseLeave={() => handleItemHover(item.id, false)}
-        >
-          {content}
-        </Link>
-        {tooltip}
-      </div>
-    );
-  };
-
-  // Renderizar sección de menú
-  const renderMenuSection = (menu) => {
-    const isExpanded = expandedMenus.includes(menu.id);
-    const hasActive = hasActiveRoute(menu.items);
-    const SectionIcon = menu.icon;
-
-    return (
-      <div key={menu.id} className="space-y-2">
-        {!collapsed && (
-          <button
-            onClick={() => toggleMenu(menu.id)}
-            className={`
-              group flex items-center justify-between w-full p-2 rounded-lg transition-all duration-200
-              ${hasActive 
-                ? 'bg-blue-50 text-blue-700' 
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }
-            `}
-          >
-            <div className="flex items-center space-x-2">
-              <SectionIcon className={`
-                w-4 h-4 
-                ${hasActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}
-              `} />
-              <span className="text-sm font-semibold uppercase tracking-wide">
-                {menu.title}
-              </span>
-            </div>
-            <ChevronRight className={`
-              w-4 h-4 transition-transform duration-200
-              ${isExpanded ? 'rotate-90' : ''}
-              ${hasActive ? 'text-blue-600' : 'text-gray-400'}
-            `} />
-          </button>
-        )}
-        
-        <AnimatePresence>
-          {(isExpanded || collapsed) && (
-            <motion.div
-              variants={submenuVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              className="space-y-1"
-            >
-              {menu.items.map(item => renderNavigationItem(item))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      <Link
+        key={item.id}
+        to={item.path}
+        onMouseEnter={() => collapsed && setShowTooltip(item.id)}
+        onMouseLeave={() => setShowTooltip(null)}
+        className="block group"
+      >
+        {content}
+      </Link>
     );
   };
 
   return (
-    <motion.nav
+    <motion.div
+      className="h-full flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700"
       variants={sidebarVariants}
-      animate={collapsed ? "collapsed" : "expanded"}
-      className={`
-        h-full bg-white border-r border-gray-200 flex flex-col
-        ${darkMode ? 'bg-gray-900 border-gray-700' : ''}
-      `}
+      animate={collapsed ? 'collapsed' : 'expanded'}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
     >
       {/* Header del sidebar */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
-          <AnimatePresence>
-            {!collapsed && (
-              <motion.div
-                variants={menuItemVariants}
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                className="flex items-center space-x-3"
-              >
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Cow className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900">GanaderoPro</h2>
-                  <p className="text-xs text-gray-500">v2.0.0</p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {!collapsed && (
+            <motion.div
+              className="flex items-center gap-3"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-green-600 rounded-lg flex items-center justify-center">
+                <Cow size={20} className="text-white" />
+              </div>
+              <div>
+                <h1 className="font-bold text-gray-900 dark:text-white text-sm">
+                  Sistema Bovino
+                </h1>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Gestión Ganadera
+                </p>
+              </div>
+            </motion.div>
+          )}
           
           <button
             onClick={onToggleCollapse}
-            className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
-            {collapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
+            {collapsed ? (
+              <ChevronRight size={16} className="text-gray-500" />
+            ) : (
+              <ChevronLeft size={16} className="text-gray-500" />
+            )}
           </button>
         </div>
+
+        {/* Barra de búsqueda */}
+        {!collapsed && (
+          <motion.div
+            className="mt-4"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
       </div>
 
-      {/* Menús de navegación */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {navigationMenus.map(menu => renderMenuSection(menu))}
+      {/* Navegación principal */}
+      <div className="flex-1 overflow-y-auto p-4">
+        {/* Elementos favoritos */}
+        {!collapsed && favoriteItems.length > 0 && !searchTerm && (
+          <div className="mb-6">
+            <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+              Favoritos
+            </h3>
+            <div className="space-y-1">
+              {favoriteItems.map(favoriteId => {
+                const item = navigationMenus
+                  .flatMap(menu => menu.items)
+                  .find(item => item.id === favoriteId);
+                
+                if (!item) return null;
+                
+                return renderMenuItem(item);
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Menús de navegación */}
+        <div className="space-y-6">
+          {(filteredMenus.length > 0 ? filteredMenus : navigationMenus).map(menu => {
+            if (menu.items.length === 0) return null;
+            
+            return (
+              <div key={menu.id}>
+                {!collapsed && (
+                  <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <menu.icon size={14} />
+                    {menu.title}
+                  </h3>
+                )}
+                
+                <div className="space-y-1">
+                  {menu.items.map(item => renderMenuItem(item))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Mensaje si no hay resultados de búsqueda */}
+        {searchTerm && filteredMenus.length === 0 && (
+          <div className="text-center py-8">
+            <Search size={32} className="mx-auto text-gray-400 mb-3" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              No se encontraron resultados para "{searchTerm}"
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Footer del sidebar */}
-      <div className="p-4 border-t border-gray-200">
-        <AnimatePresence>
-          {!collapsed ? (
-            <motion.div
-              variants={menuItemVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              className="space-y-2"
-            >
-              <div className="flex items-center space-x-3 p-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">JP</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">Juan Pérez</p>
-                  <p className="text-xs text-gray-500 truncate">Administrador</p>
-                </div>
-              </div>
-              
-              <button className="flex items-center space-x-2 w-full p-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                <LogOut className="w-4 h-4" />
-                <span>Cerrar Sesión</span>
-              </button>
-            </motion.div>
-          ) : (
-            <motion.button
-              variants={menuItemVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              className="w-full p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex justify-center"
-            >
-              <LogOut className="w-5 h-5" />
-            </motion.button>
-          )}
-        </AnimatePresence>
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+        {!collapsed && user && (
+          <motion.div
+            className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <img
+              src={user.avatar || '/api/placeholder/32/32'}
+              alt={user.name}
+              className="w-8 h-8 rounded-full object-cover"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-gray-900 dark:text-white text-sm truncate">
+                {user.name}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                {user.role}
+              </p>
+            </div>
+          </motion.div>
+        )}
+        
+        {collapsed && user && (
+          <div className="flex justify-center">
+            <img
+              src={user.avatar || '/api/placeholder/32/32'}
+              alt={user.name}
+              className="w-8 h-8 rounded-full object-cover"
+            />
+          </div>
+        )}
       </div>
-    </motion.nav>
+    </motion.div>
   );
 };
 
