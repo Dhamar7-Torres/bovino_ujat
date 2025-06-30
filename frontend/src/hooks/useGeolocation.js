@@ -1,406 +1,542 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { locationService } from '../services/locationService';
+import { useNotifications } from './useNotifications';
 
 /**
- * Hook personalizado para manejar la geolocalización
- * Proporciona funciones para obtener la ubicación actual y seguimiento en tiempo real
+ * Hook personalizado para manejo de geolocalización
+ * Maneja ubicación actual, tracking, distancias y almacenamiento de ubicaciones de eventos
  */
-export const useGeolocation = (options = {}) => {
-  // Estados del hook
+const useGeolocation = (options = {}) => {
+  // Estados principales de geolocalización
   const [position, setPosition] = useState(null);
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [isSupported, setIsSupported] = useState(false);
-  const [watchId, setWatchId] = useState(null);
+  const [error, setError] = useState(null);
+  const [accuracy, setAccuracy] = useState(null);
+  const [isTracking, setIsTracking] = useState(false);
+  
+  // Estados de permisos
+  const [permissionStatus, setPermissionStatus] = useState('prompt'); // 'granted', 'denied', 'prompt'
+  const [isPermissionRequested, setIsPermissionRequested] = useState(false);
 
-  // Refs para mantener referencias
-  const optionsRef = useRef(options);
-  const callbacksRef = useRef({});
+  // Estados para tracking de ubicaciones
+  const [trackingData, setTrackingData] = useState([]);
+  const [currentActivity, setCurrentActivity] = useState(null);
 
   // Configuración por defecto
-  const defaultOptions = {
-    enableHighAccuracy: true,
-    timeout: 10000,
-    maximumAge: 300000, // 5 minutos
-  };
+  const {
+    enableHighAccuracy = true,    // Alta precisión GPS
+    timeout = 15000,              // Timeout de 15 segundos
+    maximumAge = 60000,           // Caché de 1 minuto
+    watchPosition = false,        // Watch automático
+    autoRequest = true,           // Solicitar permisos automáticamente
+    minDistance = 10,             // Distancia mínima para actualizar (metros)
+    trackingInterval = 30000,     // Intervalo de tracking (30 segundos)
+    saveToDatabase = true,        // Guardar ubicaciones en BD
+    activityType = null           // Tipo de actividad actual
+  } = options;
 
-  // Verificar soporte de geolocalización
-  useEffect(() => {
-    setIsSupported('geolocation' in navigator);
+  // Referencias para control
+  const watchIdRef = useRef(null);
+  const trackingIntervalRef = useRef(null);
+  const lastPositionRef = useRef(null);
+  
+  const { addNotification } = useNotifications();
+
+  /**
+   * Función para verificar soporte de geolocalización
+   */
+  const isGeolocationSupported = useCallback(() => {
+    return 'geolocation' in navigator;
   }, []);
 
-  // Actualizar opciones
-  useEffect(() => {
-    optionsRef.current = { ...defaultOptions, ...options };
-  }, [options]);
-
-  // Función para manejar el éxito
-  const handleSuccess = useCallback((pos) => {
-    const locationData = {
-      coords: {
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude,
-        accuracy: pos.coords.accuracy,
-        altitude: pos.coords.altitude,
-        altitudeAccuracy: pos.coords.altitudeAccuracy,
-        heading: pos.coords.heading,
-        speed: pos.coords.speed
-      },
-      timestamp: pos.timestamp
-    };
-
-    setPosition(locationData);
-    setError(null);
-    setLoading(false);
-
-    // Ejecutar callback de éxito si existe
-    if (callbacksRef.current.onSuccess) {
-      callbacksRef.current.onSuccess(locationData);
-    }
-  }, []);
-
-  // Función para manejar errores
-  const handleError = useCallback((err) => {
-    let errorMessage = 'Error desconocido';
-    
-    switch (err.code) {
-      case err.PERMISSION_DENIED:
-        errorMessage = 'Acceso a la ubicación denegado por el usuario';
-        break;
-      case err.POSITION_UNAVAILABLE:
-        errorMessage = 'Información de ubicación no disponible';
-        break;
-      case err.TIMEOUT:
-        errorMessage = 'Tiempo de espera agotado al obtener la ubicación';
-        break;
-      default:
-        errorMessage = `Error de geolocalización: ${err.message}`;
+  /**
+   * Función para solicitar permisos de geolocalización
+   */
+  const requestPermission = useCallback(async () => {
+    if (!isGeolocationSupported()) {
+      setError('Geolocalización no soportada en este navegador');
+      return false;
     }
 
-    setError(errorMessage);
-    setLoading(false);
-
-    // Ejecutar callback de error si existe
-    if (callbacksRef.current.onError) {
-      callbacksRef.current.onError(err, errorMessage);
-    }
-  }, []);
-
-  // Obtener posición actual
-  const getCurrentPosition = useCallback((customOptions = {}, callbacks = {}) => {
-    return new Promise((resolve, reject) => {
-      if (!isSupported) {
-        const error = new Error('Geolocalización no soportada');
-        setError(error.message);
-        reject(error);
-        return;
+    try {
+      setIsPermissionRequested(true);
+      
+      // Verificar permisos si está disponible la API
+      if ('permissions' in navigator) {
+        const permission = await navigator.permissions.query({ name: 'geolocation' });
+        setPermissionStatus(permission.state);
+        
+        // Escuchar cambios en permisos
+        permission.addEventListener('change', () => {
+          setPermissionStatus(permission.state);
+        });
+        
+        return permission.state === 'granted';
       }
+      
+      // Si no hay API de permisos, intentar obtener ubicación directamente
+      return true;
+    } catch (err) {
+      console.error('Error al solicitar permisos:', err);
+      setError('Error al solicitar permisos de ubicación');
+      return false;
+    }
+  }, []);
 
+  /**
+   * Función para obtener la ubicación actual
+   * @param {Object} customOptions - Opciones personalizadas para esta petición
+   */
+  const getCurrentPosition = useCallback(async (customOptions = {}) => {
+    if (!isGeolocationSupported()) {
+      setError('Geolocalización no soportada');
+      return null;
+    }
+
+    try {
       setLoading(true);
       setError(null);
 
-      // Actualizar callbacks
-      callbacksRef.current = callbacks;
-
-      const geoOptions = { ...optionsRef.current, ...customOptions };
-
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          handleSuccess(pos);
-          resolve(pos);
-        },
-        (err) => {
-          handleError(err);
-          reject(err);
-        },
-        geoOptions
-      );
-    });
-  }, [isSupported, handleSuccess, handleError]);
-
-  // Iniciar seguimiento de ubicación
-  const startWatching = useCallback((customOptions = {}, callbacks = {}) => {
-    if (!isSupported) {
-      setError('Geolocalización no soportada');
-      return null;
-    }
-
-    if (watchId !== null) {
-      navigator.geolocation.clearWatch(watchId);
-    }
-
-    setLoading(true);
-    setError(null);
-
-    // Actualizar callbacks
-    callbacksRef.current = callbacks;
-
-    const geoOptions = { ...optionsRef.current, ...customOptions };
-
-    const id = navigator.geolocation.watchPosition(
-      handleSuccess,
-      handleError,
-      geoOptions
-    );
-
-    setWatchId(id);
-    return id;
-  }, [isSupported, watchId, handleSuccess, handleError]);
-
-  // Detener seguimiento de ubicación
-  const stopWatching = useCallback(() => {
-    if (watchId !== null) {
-      navigator.geolocation.clearWatch(watchId);
-      setWatchId(null);
-      setLoading(false);
-    }
-  }, [watchId]);
-
-  // Limpiar al desmontar el componente
-  useEffect(() => {
-    return () => {
-      if (watchId !== null) {
-        navigator.geolocation.clearWatch(watchId);
-      }
-    };
-  }, [watchId]);
-
-  // Calcular distancia entre dos puntos (fórmula Haversine)
-  const calculateDistance = useCallback((lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Radio de la Tierra en km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c; // Distancia en km
-  }, []);
-
-  // Verificar si una ubicación está dentro de un radio
-  const isWithinRadius = useCallback((lat1, lon1, lat2, lon2, radiusKm) => {
-    const distance = calculateDistance(lat1, lon1, lat2, lon2);
-    return distance <= radiusKm;
-  }, [calculateDistance]);
-
-  // Obtener dirección aproximada desde coordenadas (requiere API externa)
-  const reverseGeocode = useCallback(async (latitude, longitude) => {
-    try {
-      // Usando Nominatim de OpenStreetMap (gratuito)
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
-      );
-      
-      if (!response.ok) {
-        throw new Error('Error en la geocodificación inversa');
-      }
-      
-      const data = await response.json();
-      return {
-        display_name: data.display_name,
-        address: data.address,
-        formatted: data.display_name
+      const geoOptions = {
+        enableHighAccuracy,
+        timeout,
+        maximumAge,
+        ...customOptions
       };
-    } catch (error) {
-      console.error('Error en geocodificación inversa:', error);
-      return null;
-    }
-  }, []);
 
-  // Formatear coordenadas para mostrar
-  const formatCoordinates = useCallback((lat, lon, precision = 6) => {
-    if (lat === null || lon === null || lat === undefined || lon === undefined) {
-      return 'N/A';
-    }
-    
-    return `${lat.toFixed(precision)}, ${lon.toFixed(precision)}`;
-  }, []);
-
-  // Obtener precisión de la ubicación en metros
-  const getAccuracyText = useCallback((accuracy) => {
-    if (!accuracy) return 'Precisión desconocida';
-    
-    if (accuracy < 10) {
-      return `Muy precisa (±${accuracy.toFixed(1)}m)`;
-    } else if (accuracy < 50) {
-      return `Precisa (±${accuracy.toFixed(1)}m)`;
-    } else if (accuracy < 100) {
-      return `Moderada (±${accuracy.toFixed(1)}m)`;
-    } else {
-      return `Baja precisión (±${accuracy.toFixed(1)}m)`;
-    }
-  }, []);
-
-  // Verificar si la ubicación es reciente
-  const isLocationFresh = useCallback((timestamp, maxAgeMinutes = 5) => {
-    if (!timestamp) return false;
-    const now = Date.now();
-    const ageMinutes = (now - timestamp) / (1000 * 60);
-    return ageMinutes <= maxAgeMinutes;
-  }, []);
-
-  return {
-    // Estados
-    position,
-    error,
-    loading,
-    isSupported,
-    isWatching: watchId !== null,
-
-    // Funciones principales
-    getCurrentPosition,
-    startWatching,
-    stopWatching,
-
-    // Utilidades
-    calculateDistance,
-    isWithinRadius,
-    reverseGeocode,
-    formatCoordinates,
-    getAccuracyText,
-    isLocationFresh,
-
-    // Información adicional
-    latitude: position?.coords?.latitude || null,
-    longitude: position?.coords?.longitude || null,
-    accuracy: position?.coords?.accuracy || null,
-    timestamp: position?.timestamp || null
-  };
-};
-
-// Hook simplificado para obtener ubicación una sola vez
-export const useCurrentLocation = (options = {}) => {
-  const [position, setPosition] = useState(null);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  const getCurrentLocation = useCallback(async () => {
-    if (!navigator.geolocation) {
-      setError('Geolocalización no soportada');
-      return null;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const pos = await new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000,
-          ...options
-        });
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          resolve,
+          reject,
+          geoOptions
+        );
       });
 
       const locationData = {
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude,
-        accuracy: pos.coords.accuracy,
-        timestamp: pos.timestamp
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+        altitude: position.coords.altitude,
+        altitudeAccuracy: position.coords.altitudeAccuracy,
+        heading: position.coords.heading,
+        speed: position.coords.speed,
+        timestamp: new Date(position.timestamp)
       };
 
       setPosition(locationData);
-      setLoading(false);
+      setAccuracy(position.coords.accuracy);
+      lastPositionRef.current = locationData;
+
       return locationData;
     } catch (err) {
-      let errorMessage = 'Error obteniendo ubicación';
-      
-      switch (err.code) {
-        case err.PERMISSION_DENIED:
-          errorMessage = 'Acceso a ubicación denegado';
-          break;
-        case err.POSITION_UNAVAILABLE:
-          errorMessage = 'Ubicación no disponible';
-          break;
-        case err.TIMEOUT:
-          errorMessage = 'Tiempo de espera agotado';
-          break;
-      }
-
+      console.error('Error al obtener ubicación:', err);
+      const errorMessage = getGeolocationErrorMessage(err);
       setError(errorMessage);
-      setLoading(false);
+      
+      addNotification({
+        type: 'error',
+        title: 'Error de ubicación',
+        message: errorMessage
+      });
+
       return null;
+    } finally {
+      setLoading(false);
     }
-  }, [options]);
+  }, [enableHighAccuracy, timeout, maximumAge, addNotification]);
 
-  return {
-    position,
-    error,
-    loading,
-    getCurrentLocation
-  };
-};
+  /**
+   * Función para iniciar el seguimiento de ubicación
+   * @param {string} activity - Tipo de actividad (vacunación, chequeo, etc.)
+   */
+  const startTracking = useCallback(async (activity = null) => {
+    if (!isGeolocationSupported()) {
+      setError('Geolocalización no soportada');
+      return false;
+    }
 
-// Hook para seguimiento continuo de ubicación
-export const useLocationWatcher = (options = {}) => {
-  const [positions, setPositions] = useState([]);
-  const [currentPosition, setCurrentPosition] = useState(null);
-  const [error, setError] = useState(null);
-  const [isWatching, setIsWatching] = useState(false);
+    if (isTracking) {
+      console.warn('El tracking ya está activo');
+      return true;
+    }
 
-  const watchIdRef = useRef(null);
+    try {
+      setLoading(true);
+      setError(null);
+      setCurrentActivity(activity);
 
-  const startWatching = useCallback(() => {
-    if (!navigator.geolocation || isWatching) return;
+      const geoOptions = {
+        enableHighAccuracy,
+        timeout,
+        maximumAge: 0 // Sin caché para tracking
+      };
 
-    setIsWatching(true);
-    setError(null);
+      // Iniciar watch position
+      watchIdRef.current = navigator.geolocation.watchPosition(
+        (position) => {
+          const locationData = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+            altitude: position.coords.altitude,
+            altitudeAccuracy: position.coords.altitudeAccuracy,
+            heading: position.coords.heading,
+            speed: position.coords.speed,
+            timestamp: new Date(position.timestamp),
+            activity: activity || currentActivity
+          };
 
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      (pos) => {
-        const locationData = {
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-          accuracy: pos.coords.accuracy,
-          timestamp: pos.timestamp,
-          id: Date.now()
-        };
+          // Verificar si la nueva posición es significativamente diferente
+          if (shouldUpdatePosition(locationData)) {
+            setPosition(locationData);
+            setAccuracy(position.coords.accuracy);
+            
+            // Agregar a tracking data
+            setTrackingData(prev => [...prev, locationData]);
+            
+            // Guardar en base de datos si está habilitado
+            if (saveToDatabase && activity) {
+              saveLocationToDatabase(locationData, activity);
+            }
 
-        setCurrentPosition(locationData);
-        setPositions(prev => [...prev, locationData]);
-      },
-      (err) => {
-        setError(err.message);
-        setIsWatching(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 10000,
-        ...options
-      }
-    );
-  }, [isWatching, options]);
+            lastPositionRef.current = locationData;
+          }
+        },
+        (err) => {
+          console.error('Error en tracking:', err);
+          const errorMessage = getGeolocationErrorMessage(err);
+          setError(errorMessage);
+        },
+        geoOptions
+      );
 
-  const stopWatching = useCallback(() => {
-    if (watchIdRef.current !== null) {
+      setIsTracking(true);
+      
+      addNotification({
+        type: 'success',
+        title: 'Tracking iniciado',
+        message: activity ? `Seguimiento activo para: ${activity}` : 'Seguimiento de ubicación activo'
+      });
+
+      return true;
+    } catch (err) {
+      console.error('Error al iniciar tracking:', err);
+      setError('Error al iniciar seguimiento de ubicación');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [isTracking, enableHighAccuracy, timeout, currentActivity, saveToDatabase, addNotification]);
+
+  /**
+   * Función para detener el seguimiento de ubicación
+   */
+  const stopTracking = useCallback(() => {
+    if (watchIdRef.current) {
       navigator.geolocation.clearWatch(watchIdRef.current);
       watchIdRef.current = null;
-      setIsWatching(false);
+    }
+
+    if (trackingIntervalRef.current) {
+      clearInterval(trackingIntervalRef.current);
+      trackingIntervalRef.current = null;
+    }
+
+    setIsTracking(false);
+    setCurrentActivity(null);
+    
+    addNotification({
+      type: 'info',
+      title: 'Tracking detenido',
+      message: 'Seguimiento de ubicación desactivado'
+    });
+  }, [addNotification]);
+
+  /**
+   * Función para calcular distancia entre dos puntos en metros
+   * @param {Object} point1 - {latitude, longitude}
+   * @param {Object} point2 - {latitude, longitude}
+   */
+  const calculateDistance = useCallback((point1, point2) => {
+    const R = 6371e3; // Radio de la Tierra en metros
+    const φ1 = point1.latitude * Math.PI / 180;
+    const φ2 = point2.latitude * Math.PI / 180;
+    const Δφ = (point2.latitude - point1.latitude) * Math.PI / 180;
+    const Δλ = (point2.longitude - point1.longitude) * Math.PI / 180;
+
+    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ/2) * Math.sin(Δλ/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    return R * c; // Distancia en metros
+  }, []);
+
+  /**
+   * Función para verificar si está dentro de un área específica
+   * @param {Object} center - Centro del área {latitude, longitude}
+   * @param {number} radius - Radio en metros
+   * @param {Object} currentPos - Posición actual (opcional)
+   */
+  const isWithinArea = useCallback((center, radius, currentPos = null) => {
+    const pos = currentPos || position;
+    if (!pos) return false;
+
+    const distance = calculateDistance(pos, center);
+    return distance <= radius;
+  }, [position, calculateDistance]);
+
+  /**
+   * Función para guardar ubicación de evento en base de datos
+   * @param {Object} locationData - Datos de ubicación
+   * @param {string} activity - Tipo de actividad
+   * @param {string} bovineId - ID del bovino (opcional)
+   * @param {Object} metadata - Metadatos adicionales
+   */
+  const saveEventLocation = useCallback(async (locationData, activity, bovineId = null, metadata = {}) => {
+    try {
+      const eventLocationData = {
+        bovino_id: bovineId,
+        latitud: locationData.latitude,
+        longitud: locationData.longitude,
+        actividad: activity,
+        descripcion: metadata.description || '',
+        precision: locationData.accuracy,
+        altitud: locationData.altitude,
+        velocidad: locationData.speed,
+        direccion: locationData.heading,
+        timestamp: locationData.timestamp || new Date(),
+        metadata: JSON.stringify(metadata)
+      };
+
+      const response = await locationService.saveEventLocation(eventLocationData);
+      
+      if (response.success) {
+        addNotification({
+          type: 'success',
+          title: 'Ubicación guardada',
+          message: `Ubicación registrada para: ${activity}`
+        });
+        return response.data;
+      } else {
+        throw new Error(response.message);
+      }
+    } catch (err) {
+      console.error('Error al guardar ubicación:', err);
+      addNotification({
+        type: 'error',
+        title: 'Error al guardar',
+        message: 'No se pudo guardar la ubicación del evento'
+      });
+      return null;
+    }
+  }, [addNotification]);
+
+  /**
+   * Función para obtener ubicaciones históricas de un bovino
+   * @param {string} bovineId - ID del bovino
+   * @param {Object} dateRange - Rango de fechas {start, end}
+   */
+  const getBovineLocationHistory = useCallback(async (bovineId, dateRange = {}) => {
+    try {
+      const response = await locationService.getBovineLocations(bovineId, dateRange);
+      
+      if (response.success) {
+        return response.data.map(location => ({
+          id: location.id,
+          latitude: parseFloat(location.latitud),
+          longitude: parseFloat(location.longitud),
+          activity: location.actividad,
+          description: location.descripcion,
+          accuracy: location.precision,
+          timestamp: new Date(location.fecha),
+          bovineId: location.bovino_id
+        }));
+      }
+      
+      return [];
+    } catch (err) {
+      console.error('Error al obtener historial de ubicaciones:', err);
+      return [];
     }
   }, []);
 
-  const clearHistory = useCallback(() => {
-    setPositions([]);
+  /**
+   * Función para obtener ubicaciones por actividad
+   * @param {string} activity - Tipo de actividad
+   * @param {Object} dateRange - Rango de fechas
+   */
+  const getLocationsByActivity = useCallback(async (activity, dateRange = {}) => {
+    try {
+      const response = await locationService.getLocationsByActivity(activity, dateRange);
+      
+      if (response.success) {
+        return response.data.map(location => ({
+          id: location.id,
+          latitude: parseFloat(location.latitud),
+          longitude: parseFloat(location.longitud),
+          activity: location.actividad,
+          description: location.descripcion,
+          accuracy: location.precision,
+          timestamp: new Date(location.fecha),
+          bovineId: location.bovino_id,
+          bovineName: location.bovino_nombre
+        }));
+      }
+      
+      return [];
+    } catch (err) {
+      console.error('Error al obtener ubicaciones por actividad:', err);
+      return [];
+    }
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-      }
+  /**
+   * Función para convertir ubicaciones a formato GeoJSON
+   * @param {Array} locations - Array de ubicaciones
+   */
+  const toGeoJSON = useCallback((locations) => {
+    return {
+      type: 'FeatureCollection',
+      features: locations.map(location => ({
+        type: 'Feature',
+        properties: {
+          id: location.id,
+          activity: location.activity,
+          description: location.description,
+          accuracy: location.accuracy,
+          timestamp: location.timestamp.toISOString(),
+          bovineId: location.bovineId,
+          bovineName: location.bovineName
+        },
+        geometry: {
+          type: 'Point',
+          coordinates: [location.longitude, location.latitude]
+        }
+      }))
     };
   }, []);
 
+  /**
+   * Función auxiliar para determinar si actualizar la posición
+   * @param {Object} newPosition - Nueva posición
+   */
+  const shouldUpdatePosition = useCallback((newPosition) => {
+    if (!lastPositionRef.current) return true;
+    
+    const distance = calculateDistance(lastPositionRef.current, newPosition);
+    return distance >= minDistance;
+  }, [calculateDistance, minDistance]);
+
+  /**
+   * Función auxiliar para guardar ubicación en BD durante tracking
+   * @param {Object} locationData - Datos de ubicación
+   * @param {string} activity - Actividad actual
+   */
+  const saveLocationToDatabase = useCallback(async (locationData, activity) => {
+    try {
+      await locationService.saveTrackingPoint({
+        latitud: locationData.latitude,
+        longitud: locationData.longitude,
+        actividad: activity,
+        precision: locationData.accuracy,
+        timestamp: locationData.timestamp
+      });
+    } catch (err) {
+      console.error('Error al guardar punto de tracking:', err);
+    }
+  }, []);
+
+  /**
+   * Función auxiliar para obtener mensaje de error de geolocalización
+   * @param {GeolocationPositionError} error - Error de geolocalización
+   */
+  const getGeolocationErrorMessage = (error) => {
+    switch (error.code) {
+      case error.PERMISSION_DENIED:
+        setPermissionStatus('denied');
+        return 'Permisos de ubicación denegados';
+      case error.POSITION_UNAVAILABLE:
+        return 'Ubicación no disponible';
+      case error.TIMEOUT:
+        return 'Tiempo de espera agotado';
+      default:
+        return 'Error desconocido de geolocalización';
+    }
+  };
+
+  // Efecto para solicitar permisos automáticamente
+  useEffect(() => {
+    if (autoRequest && !isPermissionRequested) {
+      requestPermission();
+    }
+  }, [autoRequest, isPermissionRequested, requestPermission]);
+
+  // Efecto para iniciar watch position automático
+  useEffect(() => {
+    if (watchPosition && permissionStatus === 'granted' && !isTracking) {
+      startTracking();
+    }
+  }, [watchPosition, permissionStatus, isTracking, startTracking]);
+
+  // Cleanup al desmontar
+  useEffect(() => {
+    return () => {
+      stopTracking();
+    };
+  }, [stopTracking]);
+
   return {
-    positions,
-    currentPosition,
+    // Estados principales
+    position,
+    loading,
     error,
-    isWatching,
-    startWatching,
-    stopWatching,
-    clearHistory
+    accuracy,
+    isTracking,
+    permissionStatus,
+    isPermissionRequested,
+    trackingData,
+    currentActivity,
+    
+    // Información de soporte
+    isSupported: isGeolocationSupported(),
+    isPermissionGranted: permissionStatus === 'granted',
+    isPermissionDenied: permissionStatus === 'denied',
+    
+    // Acciones principales
+    requestPermission,
+    getCurrentPosition,
+    startTracking,
+    stopTracking,
+    saveEventLocation,
+    
+    // Utilidades de cálculo
+    calculateDistance,
+    isWithinArea,
+    
+    // Funciones de consulta
+    getBovineLocationHistory,
+    getLocationsByActivity,
+    toGeoJSON,
+    
+    // Funciones auxiliares
+    clearError: () => setError(null),
+    clearTrackingData: () => setTrackingData([]),
+    
+    // Estadísticas
+    totalTrackedPoints: trackingData.length,
+    trackingDuration: trackingData.length > 0 
+      ? (trackingData[trackingData.length - 1]?.timestamp - trackingData[0]?.timestamp) / 1000 
+      : 0,
+    
+    // Configuración actual
+    options: {
+      enableHighAccuracy,
+      timeout,
+      maximumAge,
+      minDistance,
+      trackingInterval
+    }
   };
 };
 
