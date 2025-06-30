@@ -3,81 +3,274 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "description": "Sistema de gestión de bovinos - Frontend React con Vite",
+  "author": "UJAT - Universidad Juárez Autónoma de Tabasco",
+  "license": "MIT",
+  "homepage": "https://bovino-ujat.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ujat/bovine-management-system.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ujat/bovine-management-system/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
+    "preview": "vite preview",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "lint:fix": "eslint . --ext js,jsx --fix",
+    "format": "prettier --write \"src/**/*.{js,jsx,css,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,css,json,md}\"",
+    "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "clean": "rm -rf dist node_modules/.vite",
+    "analyze": "vite-bundle-analyzer dist/stats.json",
+    "serve": "npm run build && npm run preview"
   },
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.11.1",
-    "axios": "^1.4.0",
-    "framer-motion": "^10.12.16",
-    "lucide-react": "^0.263.1",
-    "recharts": "^2.6.2",
-    "react-hook-form": "^7.44.3",
-    "react-query": "^3.39.3",
-    "zustand": "^4.3.8",
-    "date-fns": "^2.30.0",
-    "react-datepicker": "^4.11.0",
-    "react-select": "^5.7.3",
-    "react-table": "^7.8.0",
-    "react-dropzone": "^14.2.3",
-    "react-hot-toast": "^2.4.1",
-    "react-helmet-async": "^1.3.0",
-    "@radix-ui/react-accordion": "^1.1.1",
-    "@radix-ui/react-alert-dialog": "^1.0.3",
-    "@radix-ui/react-avatar": "^1.0.2",
+    "react-router-dom": "^6.21.1",
+    
+    "framer-motion": "^10.16.16",
+    "lucide-react": "^0.300.0",
+    
+    "@radix-ui/react-accordion": "^1.1.2",
+    "@radix-ui/react-alert-dialog": "^1.0.5",
+    "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-button": "^0.1.0",
     "@radix-ui/react-calendar": "^1.0.0",
     "@radix-ui/react-card": "^0.1.0",
-    "@radix-ui/react-checkbox": "^1.0.3",
-    "@radix-ui/react-dialog": "^1.0.3",
-    "@radix-ui/react-dropdown-menu": "^2.0.4",
+    "@radix-ui/react-checkbox": "^1.0.4",
+    "@radix-ui/react-collapsible": "^1.0.3",
+    "@radix-ui/react-dialog": "^1.0.5",
+    "@radix-ui/react-dropdown-menu": "^2.0.6",
     "@radix-ui/react-form": "^0.0.3",
+    "@radix-ui/react-hover-card": "^1.0.7",
+    "@radix-ui/react-icons": "^1.3.0",
     "@radix-ui/react-input": "^1.0.0",
-    "@radix-ui/react-label": "^2.0.1",
-    "@radix-ui/react-navigation-menu": "^1.1.2",
-    "@radix-ui/react-popover": "^1.0.5",
-    "@radix-ui/react-progress": "^1.0.2",
-    "@radix-ui/react-scroll-area": "^1.0.3",
-    "@radix-ui/react-select": "^1.2.1",
-    "@radix-ui/react-separator": "^1.0.2",
+    "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-menubar": "^1.0.4",
+    "@radix-ui/react-navigation-menu": "^1.1.4",
+    "@radix-ui/react-popover": "^1.0.7",
+    "@radix-ui/react-progress": "^1.0.3",
+    "@radix-ui/react-radio-group": "^1.1.3",
+    "@radix-ui/react-scroll-area": "^1.0.5",
+    "@radix-ui/react-select": "^2.0.0",
+    "@radix-ui/react-separator": "^1.0.3",
     "@radix-ui/react-sheet": "^1.0.0",
-    "@radix-ui/react-switch": "^1.0.2",
+    "@radix-ui/react-slider": "^1.1.2",
+    "@radix-ui/react-slot": "^1.0.2",
+    "@radix-ui/react-switch": "^1.0.3",
     "@radix-ui/react-table": "^0.1.0",
-    "@radix-ui/react-tabs": "^1.0.3",
+    "@radix-ui/react-tabs": "^1.0.4",
     "@radix-ui/react-textarea": "^1.0.0",
-    "@radix-ui/react-toast": "^1.1.3",
-    "@radix-ui/react-tooltip": "^1.0.5",
-    "@splinetool/react-spline": "^2.2.6",
-    "mapbox-gl": "^2.15.0",
-    "react-map-gl": "^7.1.0",
-    "@turf/turf": "^6.5.0",
+    "@radix-ui/react-toast": "^1.1.5",
+    "@radix-ui/react-toggle": "^1.0.3",
+    "@radix-ui/react-toggle-group": "^1.0.4",
+    "@radix-ui/react-tooltip": "^1.0.7",
+    
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.2.0",
+    "tailwindcss-animate": "^1.0.7",
+    
+    "react-hook-form": "^7.48.2",
+    "@hookform/resolvers": "^3.3.2",
+    "zod": "^3.22.4",
+    
+    "@tanstack/react-query": "^5.17.9",
+    "@tanstack/react-query-devtools": "^5.17.9",
+    
+    "axios": "^1.6.5",
+    "ky": "^1.2.0",
+    
+    "date-fns": "^3.2.0",
+    "react-day-picker": "^8.10.0",
+    
     "leaflet": "^1.9.4",
     "react-leaflet": "^4.2.1",
-    "class-variance-authority": "^0.6.0",
-    "clsx": "^1.2.1",
-    "tailwind-merge": "^1.13.2",
+    "@types/leaflet": "^1.9.8",
+    
+    "@splinetool/react-spline": "^2.2.6",
+    "@splinetool/runtime": "^1.0.14",
+    
+    "recharts": "^2.10.3",
+    "d3": "^7.8.5",
+    "d3-scale": "^4.0.2",
+    
+    "react-helmet-async": "^2.0.4",
+    "react-hot-toast": "^2.4.1",
+    "sonner": "^1.3.1",
+    
+    "react-dropzone": "^14.2.3",
+    "react-intersection-observer": "^9.5.3",
+    "react-virtualized-auto-sizer": "^1.0.20",
+    "react-window": "^1.8.8",
+    
+    "zustand": "^4.4.7",
+    "jotai": "^2.6.2",
+    
+    "embla-carousel-react": "^8.0.0-rc22",
+    "swiper": "^11.0.5",
+    
+    "react-spring": "^9.7.3",
+    "lottie-react": "^2.4.0",
+    "react-countup": "^6.4.2",
+    
     "react-bits": "^1.0.0",
-    "magic-ui": "^0.1.0",
-    "react-intersection-observer": "^9.5.2",
-    "react-spring": "^9.7.1",
-    "lottie-react": "^2.4.0"
+    "magic-ui": "^0.0.114",
+    
+    "lodash": "^4.17.21",
+    "ramda": "^0.29.1",
+    "uuid": "^9.0.1",
+    
+    "react-select": "^5.8.0",
+    "react-datepicker": "^4.25.0",
+    "react-color": "^2.19.3",
+    
+    "file-saver": "^2.0.5",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1",
+    "xlsx": "^0.18.5",
+    
+    "react-beautiful-dnd": "^13.1.1",
+    "react-grid-layout": "^1.4.4",
+    
+    "react-qr-code": "^2.0.12",
+    "qrcode": "^1.5.3",
+    
+    "i18next": "^23.7.16",
+    "react-i18next": "^14.0.0",
+    "i18next-browser-languagedetector": "^7.2.0",
+    
+    "react-error-boundary": "^4.0.11",
+    "workbox-window": "^7.0.0"
   },
   "devDependencies": {
-    "@types/react": "^18.2.6",
-    "@types/react-dom": "^18.2.4",
-    "@vitejs/plugin-react": "^4.0.0",
-    "autoprefixer": "^10.4.14",
-    "eslint": "^8.42.0",
-    "eslint-plugin-react": "^7.32.2",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@types/node": "^20.10.6",
+    "@types/lodash": "^4.14.202",
+    "@types/uuid": "^9.0.7",
+    "@types/file-saver": "^2.0.7",
+    "@types/qrcode": "^1.5.5",
+    "@types/react-beautiful-dnd": "^13.1.8",
+    "@types/react-color": "^3.0.11",
+    "@types/react-window": "^1.8.8",
+    "@types/d3": "^7.4.3",
+    "@types/geojson": "^7946.0.13",
+    
+    "@vitejs/plugin-react": "^4.2.1",
+    "@vitejs/plugin-react-swc": "^3.5.0",
+    "vite": "^5.0.10",
+    "vite-plugin-pwa": "^0.17.4",
+    "vite-plugin-windicss": "^1.9.3",
+    "vite-bundle-analyzer": "^0.7.0",
+    
+    "tailwindcss": "^3.4.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "postcss-import": "^15.1.0",
+    "postcss-nested": "^6.0.1",
+    
+    "eslint": "^8.56.0",
+    "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.1",
-    "postcss": "^8.4.24",
-    "tailwindcss": "^3.3.2",
-    "vite": "^4.3.9"
-  }
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "eslint-plugin-jsx-a11y": "^6.8.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-config-prettier": "^9.1.0",
+    
+    "prettier": "^3.1.1",
+    "prettier-plugin-tailwindcss": "^0.5.9",
+    
+    "typescript": "^5.3.3",
+    
+    "vitest": "^1.1.3",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/jest-dom": "^6.2.0",
+    "@testing-library/user-event": "^14.5.1",
+    "jsdom": "^23.0.1",
+    
+    "happy-dom": "^12.10.3",
+    "msw": "^2.0.11",
+    
+    "@storybook/react-vite": "^7.6.6",
+    "@storybook/addon-essentials": "^7.6.6",
+    "@storybook/addon-interactions": "^7.6.6",
+    "@storybook/addon-links": "^7.6.6",
+    
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "commitizen": "^4.3.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "@commitlint/cli": "^18.4.4",
+    "@commitlint/config-conventional": "^18.4.4",
+    
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "rimraf": "^5.0.5",
+    "serve": "^14.2.1"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.9.4"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "lint-staged": {
+    "*.{js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{css,json,md}": [
+      "prettier --write"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "keywords": [
+    "bovinos",
+    "ganadería",
+    "gestión-animal",
+    "react",
+    "vite",
+    "framer-motion",
+    "leaflet",
+    "spline",
+    "shadcn-ui",
+    "ujat",
+    "tabasco",
+    "mexico"
+  ]
 }

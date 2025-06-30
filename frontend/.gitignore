@@ -1,1 +1,338 @@
-// Placeholder content for .gitignore
+# =============================================
+# GITIGNORE - FRONTEND REACT + VITE
+# Sistema de Gestión de Bovinos
+# =============================================
+
+# =============================================
+# DEPENDENCIAS DE NODE.JS
+# =============================================
+
+# Carpeta de módulos de Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Lockfiles (mantener solo uno según el gestor de paquetes usado)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# =============================================
+# ARCHIVOS DE BUILD Y DISTRIBUCIÓN
+# =============================================
+
+# Archivos de build de Vite
+dist/
+dist-ssr/
+build/
+
+# Archivos de build legacy
+lib-cov/
+coverage/
+.nyc_output/
+
+# =============================================
+# VARIABLES DE ENTORNO Y CONFIGURACIÓN
+# =============================================
+
+# Variables de entorno (contienen datos sensibles)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Archivos de configuración específicos del proyecto
+.env.*.local
+
+# =============================================
+# ARCHIVOS TEMPORALES Y CACHE
+# =============================================
+
+# Cache de Vite
+.vite/
+
+# Cache de ESLint
+.eslintcache
+
+# Cache de Prettier
+.prettier-cache
+
+# Cache de TypeScript
+*.tsbuildinfo
+
+# Cache de Turbo
+.turbo/
+
+# Cache de Next.js (si se usa)
+.next/
+
+# Cache de Nuxt.js (si se usa)
+.nuxt/
+
+# =============================================
+# LOGS Y REPORTES
+# =============================================
+
+# Logs de npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Logs del sistema
+*.log
+
+# Reportes de coverage
+coverage/
+*.lcov
+
+# Reportes de pruebas
+test-results/
+playwright-report/
+test-results.xml
+
+# =============================================
+# ARCHIVOS DEL SISTEMA OPERATIVO
+# =============================================
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# =============================================
+# EDITORES E IDEs
+# =============================================
+
+# Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# IntelliJ IDEA / WebStorm
+.idea/
+*.swp
+*.swo
+*~
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Vim
+*.swp
+*.swo
+*.un~
+Session.vim
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# =============================================
+# ARCHIVOS DE DESARROLLO
+# =============================================
+
+# Source maps de desarrollo
+*.map
+
+# Archivos de debugging
+debug.log
+.debug/
+
+# Storybook
+storybook-static/
+
+# =============================================
+# ARCHIVOS MULTIMEDIA Y ASSETS TEMPORALES
+# =============================================
+
+# Archivos multimedia temporales
+temp/
+tmp/
+
+# Imágenes de desarrollo no definitivas
+dev-images/
+test-images/
+
+# Archivos de video grandes
+*.mp4
+*.avi
+*.mov
+*.wmv
+
+# Excepto los assets necesarios del proyecto
+!src/assets/**
+
+# =============================================
+# ARCHIVOS ESPECÍFICOS DEL PROYECTO BOVINO
+# =============================================
+
+# Uploads temporales de imágenes de bovinos
+uploads/temp/
+uploads/dev/
+
+# Archivos de backup locales
+backup/
+*.backup
+
+# Archivos de configuración local de desarrollo
+config.local.js
+settings.local.json
+
+# Modelos 3D temporales de Spline
+temp-models/
+*.splinecode.bak
+
+# =============================================
+# HERRAMIENTAS DE ANÁLISIS Y TESTING
+# =============================================
+
+# Coverage reports
+coverage/
+.coverage
+htmlcov/
+
+# Lighthouse reports
+lighthouse-reports/
+
+# Bundle analyzer reports
+bundle-analyzer-report.html
+stats.json
+
+# Performance profiling
+*.perf
+
+# =============================================
+# SERVICIOS EN LA NUBE Y DEPLOYMENT
+# =============================================
+
+# Vercel
+.vercel/
+
+# Netlify
+.netlify/
+
+# Firebase
+.firebase/
+firebase-debug.log
+
+# Docker
+Dockerfile.local
+docker-compose.override.yml
+
+# =============================================
+# ARCHIVOS DE DOCUMENTACIÓN TEMPORAL
+# =============================================
+
+# Documentación generada automáticamente
+docs/auto-generated/
+
+# Archivos de markdown temporales
+*.md.bak
+draft-*.md
+
+# =============================================
+# ARCHIVOS DE DATOS SENSIBLES
+# =============================================
+
+# Claves y certificados
+*.pem
+*.key
+*.crt
+*.p12
+
+# Archivos de configuración con datos sensibles
+secrets.json
+credentials.json
+
+# =============================================
+# ARCHIVOS ESPECÍFICOS DE REACT/VITE
+# =============================================
+
+# Archivos de tipo declarations generados
+src/types/auto-generated/
+
+# Hot reload cache
+.hot-reload/
+
+# React DevTools
+.react-devtools/
+
+# =============================================
+# MONOREPO Y WORKSPACES
+# =============================================
+
+# Lerna
+.lerna/
+
+# Rush
+common/temp/
+.rush/
+
+# =============================================
+# HERRAMIENTAS DE MAPAS
+# =============================================
+
+# Cache de tiles de mapas
+map-cache/
+tiles-cache/
+
+# Archivos temporales de geolocalización
+geolocations-temp.json
+
+# =============================================
+# ANIMACIONES Y RECURSOS 3D
+# =============================================
+
+# Archivos temporales de Framer Motion
+.framer-motion-cache/
+
+# Archivos temporales de Spline
+.spline-cache/
+
+# =============================================
+# NOTAS IMPORTANTES
+# =============================================
+
+# INCLUIR ARCHIVOS NECESARIOS:
+# - README.md
+# - package.json
+# - Archivos de configuración principales
+# - Assets necesarios en src/assets/
+# - Archivos de configuración de herramientas
+
+# NUNCA INCLUIR:
+# - Variables de entorno con datos reales
+# - Claves API o tokens
+# - Passwords o credenciales
+# - Archivos personales de desarrolladores
