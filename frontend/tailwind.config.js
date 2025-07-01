@@ -1,290 +1,120 @@
-/**
- * tailwind.config.js - Configuración de Tailwind CSS para el sistema de gestión de bovinos
- * Configuración personalizada con tema específico, componentes y utilidades
- */
-
-import { fontFamily } from "tailwindcss/defaultTheme";
-
 /** @type {import('tailwindcss').Config} */
 export default {
-  // Habilitar modo dark con estrategia de clase
-  darkMode: ["class"],
+  // Modo de producción para purgar CSS no utilizado
+  mode: 'jit',
   
-  // Archivos donde buscar clases de Tailwind
+  // Archivos a escanear para clases de Tailwind
   content: [
-    './public/index.html',
-    './src/**/*.{js,jsx,ts,tsx}',
-    './src/components/**/*.{js,jsx,ts,tsx}',
-    './src/pages/**/*.{js,jsx,ts,tsx}',
-    './src/lib/**/*.{js,jsx,ts,tsx}',
-    // Incluir componentes de ShadCN UI y librerías externas
-    './node_modules/@radix-ui/**/*.{js,jsx}',
-    './node_modules/lucide-react/**/*.{js,jsx}',
-    './node_modules/react-day-picker/**/*.{js,jsx}',
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{html,vue}",
   ],
   
-  // Prefijo para clases CSS (opcional)
-  prefix: "",
+  // Configuración del tema oscuro
+  darkMode: 'class', // Usa class strategy en lugar de media query
   
   theme: {
-    // Configuración de container responsivo
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
-    },
-    
     extend: {
-      // Paleta de colores personalizada para el sistema de bovinos
+      // Colores personalizados del sistema
       colors: {
-        // Colores del sistema de branding
-        brand: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
+        // Colores principales
+        primary: {
+          50: '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a',
+          950: '#172554',
         },
         
-        // Colores específicos para tipos de bovinos
+        // Colores secundarios
+        secondary: {
+          50: '#f8fafc',
+          100: '#f1f5f9',
+          200: '#e2e8f0',
+          300: '#cbd5e1',
+          400: '#94a3b8',
+          500: '#64748b',
+          600: '#475569',
+          700: '#334155',
+          800: '#1e293b',
+          900: '#0f172a',
+          950: '#020617',
+        },
+        
+        // Colores para bovinos (temática ganadera)
         bovine: {
-          // Colores para diferentes razas
-          holstein: '#000000',
-          jersey: '#d97706',
-          brahman: '#dc2626',
-          angus: '#1f2937',
-          charolais: '#f3f4f6',
-          // Estados de salud
-          healthy: '#16a34a',
-          sick: '#dc2626',
-          recovering: '#f59e0b',
-          vaccinated: '#3b82f6',
+          brown: '#8B4513',
+          cream: '#F5F5DC',
+          leather: '#964B00',
+          hay: '#DAA520',
+          grass: '#228B22',
+          milk: '#FFFAF0',
+        },
+        
+        // Colores para estados de salud
+        health: {
+          excellent: '#10b981',
+          good: '#84cc16',
+          warning: '#f59e0b',
+          critical: '#ef4444',
+          unknown: '#6b7280',
         },
         
         // Colores para producción
         production: {
-          milk: '#3b82f6',
-          meat: '#ef4444',
-          breeding: '#f59e0b',
-          mixed: '#10b981',
-        },
-        
-        // Colores para mapas y geolocalización
-        location: {
-          ranch: '#16a34a',
-          pasture: '#84cc16',
-          barn: '#a855f7',
-          hospital: '#ef4444',
-          feed: '#f59e0b',
-        },
-        
-        // Sistema de colores para ShadCN UI
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          high: '#059669',
+          medium: '#0891b2',
+          low: '#dc2626',
+          none: '#9ca3af',
         },
       },
       
-      // Radio de bordes personalizado
-      borderRadius: {
-        xl: "calc(var(--radius) + 4px)",
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
-      
-      // Tipografía personalizada
+      // Fuentes personalizadas
       fontFamily: {
-        sans: ["var(--font-sans)", ...fontFamily.sans],
-        mono: ["var(--font-mono)", ...fontFamily.mono],
-        heading: ["Inter", "system-ui", "sans-serif"],
-        body: ["Inter", "system-ui", "sans-serif"],
+        'sans': ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', '"Noto Sans"', 'sans-serif'],
+        'mono': ['"JetBrains Mono"', '"Fira Code"', '"SF Mono"', 'Consolas', '"Liberation Mono"', 'Menlo', 'monospace'],
+        'display': ['Inter', 'ui-sans-serif', 'system-ui'],
       },
       
-      // Tamaños de fuente específicos
-      fontSize: {
-        '2xs': ['0.625rem', { lineHeight: '0.75rem' }],
-        'xs': ['0.75rem', { lineHeight: '1rem' }],
-        'sm': ['0.875rem', { lineHeight: '1.25rem' }],
-        'base': ['1rem', { lineHeight: '1.5rem' }],
-        'lg': ['1.125rem', { lineHeight: '1.75rem' }],
-        'xl': ['1.25rem', { lineHeight: '1.75rem' }],
-        '2xl': ['1.5rem', { lineHeight: '2rem' }],
-        '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
-        '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
-        '5xl': ['3rem', { lineHeight: '1' }],
-        '6xl': ['3.75rem', { lineHeight: '1' }],
-        '7xl': ['4.5rem', { lineHeight: '1' }],
-        '8xl': ['6rem', { lineHeight: '1' }],
-        '9xl': ['8rem', { lineHeight: '1' }],
-      },
-      
-      // Espaciado adicional
+      // Espaciado personalizado
       spacing: {
         '18': '4.5rem',
         '88': '22rem',
         '128': '32rem',
-        '144': '36rem',
       },
       
-      // Animaciones personalizadas
-      keyframes: {
-        // Animación de entrada suave
-        "fade-in": {
-          "0%": { opacity: "0" },
-          "100%": { opacity: "1" },
-        },
-        "fade-out": {
-          "0%": { opacity: "1" },
-          "100%": { opacity: "0" },
-        },
-        
-        // Animaciones de deslizamiento
-        "slide-in-from-top": {
-          "0%": { transform: "translateY(-100%)" },
-          "100%": { transform: "translateY(0)" },
-        },
-        "slide-in-from-bottom": {
-          "0%": { transform: "translateY(100%)" },
-          "100%": { transform: "translateY(0)" },
-        },
-        "slide-in-from-left": {
-          "0%": { transform: "translateX(-100%)" },
-          "100%": { transform: "translateX(0)" },
-        },
-        "slide-in-from-right": {
-          "0%": { transform: "translateX(100%)" },
-          "100%": { transform: "translateX(0)" },
-        },
-        
-        // Animaciones de escalado
-        "scale-in": {
-          "0%": { transform: "scale(0.95)", opacity: "0" },
-          "100%": { transform: "scale(1)", opacity: "1" },
-        },
-        "scale-out": {
-          "0%": { transform: "scale(1)", opacity: "1" },
-          "100%": { transform: "scale(0.95)", opacity: "0" },
-        },
-        
-        // Animaciones específicas para componentes
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
-        },
-        
-        // Animaciones para el dashboard
-        "pulse-slow": {
-          "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.5" },
-        },
-        
-        // Animación de carga
-        "spin-slow": {
-          "0%": { transform: "rotate(0deg)" },
-          "100%": { transform: "rotate(360deg)" },
-        },
-        
-        // Animación de heartbeat para alertas
-        "heartbeat": {
-          "0%": { transform: "scale(1)" },
-          "14%": { transform: "scale(1.3)" },
-          "28%": { transform: "scale(1)" },
-          "42%": { transform: "scale(1.3)" },
-          "70%": { transform: "scale(1)" },
-        },
-        
-        // Animación de bounce suave
-        "bounce-gentle": {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-10%)" },
-        },
-        
-        // Animación de shake para errores
-        "shake": {
-          "0%, 100%": { transform: "translateX(0)" },
-          "10%, 30%, 50%, 70%, 90%": { transform: "translateX(-10px)" },
-          "20%, 40%, 60%, 80%": { transform: "translateX(10px)" },
+      // Tamaños de contenedor
+      container: {
+        center: true,
+        padding: {
+          DEFAULT: '1rem',
+          sm: '2rem',
+          lg: '4rem',
+          xl: '5rem',
+          '2xl': '6rem',
         },
       },
       
-      // Clases de animación
-      animation: {
-        "fade-in": "fade-in 0.5s ease-out",
-        "fade-out": "fade-out 0.5s ease-out",
-        "slide-in-from-top": "slide-in-from-top 0.3s ease-out",
-        "slide-in-from-bottom": "slide-in-from-bottom 0.3s ease-out",
-        "slide-in-from-left": "slide-in-from-left 0.3s ease-out",
-        "slide-in-from-right": "slide-in-from-right 0.3s ease-out",
-        "scale-in": "scale-in 0.2s ease-out",
-        "scale-out": "scale-out 0.2s ease-in",
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-        "pulse-slow": "pulse-slow 3s ease-in-out infinite",
-        "spin-slow": "spin-slow 3s linear infinite",
-        "heartbeat": "heartbeat 1.5s ease-in-out infinite",
-        "bounce-gentle": "bounce-gentle 2s ease-in-out infinite",
-        "shake": "shake 0.5s ease-in-out",
-      },
-      
-      // Sombras personalizadas
-      boxShadow: {
-        'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
-        'medium': '0 4px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 30px -5px rgba(0, 0, 0, 0.05)',
-        'hard': '0 10px 50px -12px rgba(0, 0, 0, 0.25)',
-        'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
-        'glow': '0 0 20px rgba(59, 130, 246, 0.5)',
-        'glow-green': '0 0 20px rgba(16, 185, 129, 0.5)',
-        'glow-red': '0 0 20px rgba(239, 68, 68, 0.5)',
-      },
-      
-      // Gradientes personalizados
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-        'gradient-ranch': 'linear-gradient(135deg, #16a34a 0%, #84cc16 100%)',
-        'gradient-sky': 'linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%)',
-        'gradient-sunset': 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
+      // Configuración de breakpoints responsivos
+      screens: {
+        'xs': '475px',
+        'sm': '640px',
+        'md': '768px',
+        'lg': '1024px',
+        'xl': '1280px',
+        '2xl': '1536px',
+        '3xl': '1920px',
+        
+        // Breakpoints para altura
+        'h-sm': { 'raw': '(min-height: 640px)' },
+        'h-md': { 'raw': '(min-height: 768px)' },
+        'h-lg': { 'raw': '(min-height: 1024px)' },
       },
       
       // Configuración de z-index
@@ -296,98 +126,141 @@ export default {
         '100': '100',
       },
       
-      // Configuración de backdrop blur
+      // Configuración de bordes redondeados
+      borderRadius: {
+        'none': '0',
+        'sm': '0.125rem',
+        DEFAULT: '0.25rem',
+        'md': '0.375rem',
+        'lg': '0.5rem',
+        'xl': '0.75rem',
+        '2xl': '1rem',
+        '3xl': '1.5rem',
+        'full': '9999px',
+      },
+      
+      // Configuración de sombras
+      boxShadow: {
+        'inner-lg': 'inset 0 10px 15px -3px rgba(0, 0, 0, 0.1), inset 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        'smooth': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        'glow': '0 0 15px rgba(59, 130, 246, 0.3)',
+        'glow-lg': '0 0 25px rgba(59, 130, 246, 0.4)',
+      },
+      
+      // Configuración de gradientes
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+        'gradient-bovine': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        'gradient-health': 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+        'gradient-production': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      },
+      
+      // Configuración de animaciones
+      animation: {
+        'fade-in': 'fadeIn 0.5s ease-in-out',
+        'fade-out': 'fadeOut 0.5s ease-in-out',
+        'slide-in-right': 'slideInRight 0.3s ease-out',
+        'slide-in-left': 'slideInLeft 0.3s ease-out',
+        'slide-in-up': 'slideInUp 0.3s ease-out',
+        'slide-in-down': 'slideInDown 0.3s ease-out',
+        'scale-in': 'scaleIn 0.2s ease-out',
+        'scale-out': 'scaleOut 0.2s ease-in',
+        'bounce-gentle': 'bounceGentle 2s infinite',
+        'pulse-slow': 'pulse 3s infinite',
+        'wiggle': 'wiggle 1s ease-in-out infinite',
+        'float': 'float 3s ease-in-out infinite',
+        'glow': 'glow 2s ease-in-out infinite alternate',
+        'shimmer': 'shimmer 2s linear infinite',
+      },
+      
+      // Configuración de transiciones
+      transitionProperty: {
+        'spacing': 'margin, padding',
+        'colors': 'color, background-color, border-color, text-decoration-color, fill, stroke',
+      },
+      
+      // Configuración de duración de transiciones
+      transitionDuration: {
+        '0': '0ms',
+        '75': '75ms',
+        '100': '100ms',
+        '150': '150ms',
+        '200': '200ms',
+        '300': '300ms',
+        '500': '500ms',
+        '700': '700ms',
+        '1000': '1000ms',
+        '2000': '2000ms',
+      },
+      
+      // Configuración de timing functions
+      transitionTimingFunction: {
+        'in-expo': 'cubic-bezier(0.95, 0.05, 0.795, 0.035)',
+        'out-expo': 'cubic-bezier(0.19, 1, 0.22, 1)',
+        'bounce': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+      },
+      
+      // Configuración de backdrop filter
       backdropBlur: {
-        'xs': '2px',
-      },
-      
-      // Tamaños máximos específicos
-      maxWidth: {
-        '8xl': '88rem',
-        '9xl': '96rem',
-      },
-      
-      // Alturas específicas para el layout
-      height: {
-        'screen-minus-header': 'calc(100vh - 4rem)',
-        'screen-minus-nav': 'calc(100vh - 8rem)',
-      },
-      
-      // Configuración para aspectos de ratio
-      aspectRatio: {
-        '4/3': '4 / 3',
-        '3/2': '3 / 2',
-        '2/3': '2 / 3',
+        xs: '2px',
+        sm: '4px',
+        md: '8px',
+        lg: '12px',
+        xl: '16px',
+        '2xl': '24px',
+        '3xl': '40px',
       },
     },
   },
   
   // Plugins de Tailwind
   plugins: [
-    // Plugin para animaciones adicionales
-    require("tailwindcss-animate"),
-    
-    // Plugin para formularios
-    require("@tailwindcss/forms")({
-      strategy: 'class',
+    // Plugin para formularios mejorados
+    require('@tailwindcss/forms')({
+      strategy: 'class', // Solo aplicar estilos cuando se use la clase 'form-*'
     }),
     
-    // Plugin para tipografía
-    require("@tailwindcss/typography"),
+    // Plugin para animaciones personalizadas
+    require('tailwindcss-animate'),
     
-    // Plugin personalizado para utilidades específicas del proyecto
+    // Plugin personalizado para utilidades específicas de la aplicación
     function({ addUtilities, addComponents, theme }) {
       // Utilidades personalizadas
       addUtilities({
-        // Clase para centrar contenido con flexbox
-        '.flex-center': {
+        // Centrado perfecto
+        '.center-perfect': {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         },
         
-        // Clase para texto con elipsis
-        '.text-ellipsis-2': {
-          overflow: 'hidden',
-          display: '-webkit-box',
-          '-webkit-box-orient': 'vertical',
-          '-webkit-line-clamp': '2',
-        },
-        
-        '.text-ellipsis-3': {
-          overflow: 'hidden',
-          display: '-webkit-box',
-          '-webkit-box-orient': 'vertical',
-          '-webkit-line-clamp': '3',
-        },
-        
-        // Scrollbar personalizado
-        '.scrollbar-thin': {
+        // Scroll oculto pero funcional
+        '.scroll-hidden': {
+          '-ms-overflow-style': 'none',
+          'scrollbar-width': 'none',
           '&::-webkit-scrollbar': {
-            width: '6px',
-          },
-          '&::-webkit-scrollbar-track': {
-            background: theme('colors.gray.100'),
-            borderRadius: '3px',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            background: theme('colors.gray.400'),
-            borderRadius: '3px',
-          },
-          '&::-webkit-scrollbar-thumb:hover': {
-            background: theme('colors.gray.500'),
+            display: 'none',
           },
         },
         
-        // Clase para glassmorphism
+        // Texto con degradado
+        '.text-gradient': {
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          '-webkit-background-clip': 'text',
+          '-webkit-text-fill-color': 'transparent',
+          'background-clip': 'text',
+        },
+        
+        // Glass morphism
         '.glass': {
-          background: 'rgba(255, 255, 255, 0.1)',
+          backgroundColor: 'rgba(255, 255, 255, 0.1)',
           backdropFilter: 'blur(10px)',
           border: '1px solid rgba(255, 255, 255, 0.2)',
         },
         
         '.glass-dark': {
-          background: 'rgba(0, 0, 0, 0.1)',
+          backgroundColor: 'rgba(0, 0, 0, 0.1)',
           backdropFilter: 'blur(10px)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
         },
@@ -395,41 +268,88 @@ export default {
       
       // Componentes personalizados
       addComponents({
-        // Botón base personalizado
-        '.btn-base': {
-          padding: `${theme('spacing.2')} ${theme('spacing.4')}`,
-          borderRadius: theme('borderRadius.md'),
-          fontWeight: theme('fontWeight.medium'),
-          transition: 'all 0.2s ease-in-out',
-          cursor: 'pointer',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: theme('spacing.2'),
-        },
-        
-        // Tarjeta base
+        // Card base
         '.card-base': {
           backgroundColor: theme('colors.white'),
           borderRadius: theme('borderRadius.lg'),
-          boxShadow: theme('boxShadow.soft'),
-          padding: theme('spacing.6'),
+          boxShadow: theme('boxShadow.sm'),
+          border: `1px solid ${theme('colors.gray.200')}`,
+          
+          '.dark &': {
+            backgroundColor: theme('colors.gray.800'),
+            borderColor: theme('colors.gray.700'),
+          },
         },
         
-        // Input base
-        '.input-base': {
-          padding: `${theme('spacing.2')} ${theme('spacing.3')}`,
-          borderRadius: theme('borderRadius.md'),
+        // Botón primario personalizado
+        '.btn-bovine': {
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: theme('borderRadius.lg'),
+          fontWeight: theme('fontWeight.medium'),
+          fontSize: theme('fontSize.sm'),
+          padding: `${theme('spacing.2')} ${theme('spacing.4')}`,
+          transition: 'all 0.2s ease',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: theme('colors.white'),
+          border: 'none',
+          cursor: 'pointer',
+          
+          '&:hover': {
+            transform: 'translateY(-1px)',
+            boxShadow: theme('boxShadow.lg'),
+          },
+          
+          '&:active': {
+            transform: 'translateY(0)',
+          },
+          
+          '&:disabled': {
+            opacity: '0.5',
+            cursor: 'not-allowed',
+            transform: 'none',
+          },
+        },
+        
+        // Input personalizado
+        '.input-bovine': {
+          width: '100%',
+          borderRadius: theme('borderRadius.lg'),
           border: `1px solid ${theme('colors.gray.300')}`,
-          fontSize: theme('fontSize.sm[0]'),
-          transition: 'all 0.2s ease-in-out',
+          padding: `${theme('spacing.2')} ${theme('spacing.3')}`,
+          fontSize: theme('fontSize.sm'),
+          transition: 'all 0.2s ease',
+          backgroundColor: theme('colors.white'),
+          
           '&:focus': {
             outline: 'none',
-            borderColor: theme('colors.brand.500'),
-            boxShadow: `0 0 0 3px ${theme('colors.brand.500')}20`,
+            borderColor: theme('colors.primary.500'),
+            boxShadow: `0 0 0 3px ${theme('colors.primary.100')}`,
+          },
+          
+          '.dark &': {
+            backgroundColor: theme('colors.gray.800'),
+            borderColor: theme('colors.gray.600'),
+            color: theme('colors.white'),
+            
+            '&:focus': {
+              borderColor: theme('colors.primary.400'),
+              boxShadow: `0 0 0 3px ${theme('colors.primary.900')}`,
+            },
           },
         },
       });
     },
   ],
-};
+  
+  // Configuración de purge para optimizar el tamaño del CSS en producción
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
+  
+  // Variables experimentales
+  experimental: {
+    optimizeUniversalDefaults: true,
+  },
+}

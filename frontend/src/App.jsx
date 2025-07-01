@@ -1,139 +1,267 @@
-/**
- * App.jsx - Componente principal de la aplicación de gestión de bovinos
- * Versión corregida con rutas básicas funcionales
- */
+import React, { Suspense, lazy, useEffect, useState } from 'react'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Helmet } from 'react-helmet-async'
 
-import React, { Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from 'react-hot-toast';
+// Componentes básicos
+import LoadingSpinner from '@/components/common/Loading/LoadingSpinner'
+import ErrorBoundary from '@/components/common/ErrorBoundary/ErrorBoundary'
+import MainLayout from '@/components/common/Layout/MainLayout'
 
-// Context Providers
-import { ThemeProvider } from './context/ThemeContext';
-import { AuthProvider } from './context/AuthContext';
-import { NotificationProvider } from './context/NotificationContext';
-import { DataProvider } from './context/DataContext';
+// Lazy loading de páginas para mejorar el rendimiento
+const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard'))
+const Login = lazy(() => import('@/pages/auth/Login'))
+const Register = lazy(() => import('@/pages/auth/Register'))
+const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'))
 
-// Layout Components
-import Layout from './components/common/Layout/Layout';
-import ErrorBoundary from './components/common/ErrorBoundary/ErrorBoundary';
-import Loading from './components/common/Loading/Loading';
+// Páginas de gestión de bovinos
+const BovinesList = lazy(() => import('@/pages/bovines/BovinesList'))
+const BovineDetail = lazy(() => import('@/pages/bovines/BovineDetail'))
+const BovineForm = lazy(() => import('@/pages/bovines/BovineForm'))
 
-// Pages - Solo las que existen
-const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+// Páginas de salud
+const HealthRecords = lazy(() => import('@/pages/health/HealthRecords'))
+const VaccinationSchedule = lazy(() => import('@/pages/health/VaccinationSchedule'))
+const TreatmentHistory = lazy(() => import('@/pages/health/TreatmentHistory'))
 
-// Componente simple para páginas que aún no existen
-const ComingSoon = ({ pageName }) => (
-  <div className="min-h-96 flex items-center justify-center">
-    <div className="text-center space-y-4">
-      <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto">
-        <span className="text-2xl">🚧</span>
-      </div>
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-        {pageName}
-      </h2>
-      <p className="text-gray-600 dark:text-gray-400">
-        Esta página está en desarrollo y estará disponible pronto.
-      </p>
-      <button
-        onClick={() => window.history.back()}
-        className="btn-primary"
-      >
-        Volver
-      </button>
-    </div>
-  </div>
-);
+// Páginas de producción
+const ProductionRecords = lazy(() => import('@/pages/production/ProductionRecords'))
+const MilkProduction = lazy(() => import('@/pages/production/MilkProduction'))
 
-// Configuración de React Query
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 3,
-      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-      staleTime: 5 * 60 * 1000, // 5 minutos
-      cacheTime: 10 * 60 * 1000, // 10 minutos
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: true
-    },
-    mutations: {
-      retry: 1
+// Páginas de reproducción
+const ReproductionManagement = lazy(() => import('@/pages/reproduction/ReproductionManagement'))
+const BreedingSchedule = lazy(() => import('@/pages/reproduction/BreedingSchedule'))
+
+// Páginas de reportes
+const Reports = lazy(() => import('@/pages/reports/Reports'))
+const Analytics = lazy(() => import('@/pages/reports/Analytics'))
+
+// Páginas de configuración
+const Settings = lazy(() => import('@/pages/settings/Settings'))
+const Profile = lazy(() => import('@/pages/settings/Profile'))
+
+// Página temporal para funcionalidades en desarrollo
+const ComingSoon = lazy(() => import('@/components/common/ComingSoon/ComingSoon'))
+
+// Hook personalizado para autenticación
+const useAuth = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    // Verificar token de autenticación al cargar la app
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('auth_token')
+        if (token) {
+          // Aquí validarías el token con el backend
+          // Por ahora simulamos una verificación exitosa
+          setIsAuthenticated(true)
+          setUser({ name: 'Usuario', role: 'admin' })
+        }
+      } catch (error) {
+        console.error('Error verificando autenticación:', error)
+        localStorage.removeItem('auth_token')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    checkAuth()
+  }, [])
+
+  return { isAuthenticated, isLoading, user, setIsAuthenticated, setUser }
+}
+
+// Componente para rutas protegidas
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth()
+
+  if (isLoading) {
+    return <LoadingSpinner />
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
+  return children
+}
+
+// Componente para rutas públicas (redirect si ya está autenticado)
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth()
+
+  if (isLoading) {
+    return <LoadingSpinner />
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />
+  }
+
+  return children
+}
+
+// Animaciones de transición entre páginas
+const pageTransition = {
+  initial: {
+    opacity: 0,
+    y: 20,
+    scale: 0.95
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.3,
+      ease: "easeOut"
+    }
+  },
+  exit: {
+    opacity: 0,
+    y: -20,
+    scale: 0.95,
+    transition: {
+      duration: 0.2,
+      ease: "easeIn"
     }
   }
-});
+}
 
-const App = () => {
+// Componente principal de la aplicación
+function App() {
+  const location = useLocation()
+  const [isDarkMode, setIsDarkMode] = useState(false)
+
+  // Configurar tema oscuro/claro desde localStorage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme')
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    
+    const shouldUseDark = savedTheme === 'dark' || (!savedTheme && prefersDark)
+    setIsDarkMode(shouldUseDark)
+    
+    // Aplicar clase al html
+    if (shouldUseDark) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [])
+
+  // Función para alternar tema
+  const toggleTheme = () => {
+    setIsDarkMode(prev => {
+      const newTheme = !prev
+      localStorage.setItem('theme', newTheme ? 'dark' : 'light')
+      if (newTheme) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+      return newTheme
+    })
+  }
+
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <ThemeProvider>
-            <DataProvider>
-              <NotificationProvider>
-                <Router>
-                  <Layout>
-                    <Suspense fallback={
-                      <div className="min-h-96 flex items-center justify-center">
-                        <Loading 
-                          message="Cargando página..." 
-                          type="bovines"
-                          size="large"
-                          variant="thematic"
-                        />
-                      </div>
-                    }>
+      <div className={`min-h-screen transition-colors duration-300 ${
+        isDarkMode ? 'dark bg-gray-900' : 'bg-gray-50'
+      }`}>
+        {/* Configuración del HEAD con Helmet */}
+        <Helmet>
+          <title>Sistema de Gestión de Bovinos</title>
+          <meta name="description" content="Sistema integral para la gestión de ganado bovino con control de salud, producción y ubicación." />
+          <meta name="theme-color" content={isDarkMode ? "#1F2937" : "#3B82F6"} />
+        </Helmet>
+
+        {/* Animaciones de transición entre rutas */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={pageTransition}
+            className="min-h-screen"
+          >
+            <Suspense fallback={<LoadingSpinner />}>
+              <Routes location={location}>
+                {/* Rutas públicas */}
+                <Route path="/login" element={
+                  <PublicRoute>
+                    <Login />
+                  </PublicRoute>
+                } />
+                <Route path="/register" element={
+                  <PublicRoute>
+                    <Register />
+                  </PublicRoute>
+                } />
+                <Route path="/forgot-password" element={
+                  <PublicRoute>
+                    <ForgotPassword />
+                  </PublicRoute>
+                } />
+
+                {/* Rutas protegidas con layout */}
+                <Route path="/" element={
+                  <ProtectedRoute>
+                    <MainLayout toggleTheme={toggleTheme} isDarkMode={isDarkMode}>
                       <Routes>
-                        {/* Ruta principal - Dashboard */}
-                        <Route index element={<Dashboard />} />
+                        {/* Redirect desde raíz al dashboard */}
+                        <Route index element={<Navigate to="/dashboard" replace />} />
                         
-                        {/* Rutas de bovinos */}
-                        <Route path="bovines" element={<ComingSoon pageName="Gestión de Bovinos" />} />
-                        <Route path="bovines/new" element={<ComingSoon pageName="Agregar Bovino" />} />
-                        <Route path="bovines/:id" element={<ComingSoon pageName="Detalle de Bovino" />} />
-                        <Route path="bovines/:id/edit" element={<ComingSoon pageName="Editar Bovino" />} />
+                        {/* Dashboard principal */}
+                        <Route path="dashboard" element={<Dashboard />} />
                         
-                        {/* Rutas de salud */}
-                        <Route path="health" element={<ComingSoon pageName="Control Sanitario" />} />
-                        <Route path="health/record" element={<ComingSoon pageName="Registro de Salud" />} />
-                        <Route path="health/vaccines" element={<ComingSoon pageName="Vacunación" />} />
-                        <Route path="health/alerts" element={<ComingSoon pageName="Alertas de Salud" />} />
+                        {/* Gestión de bovinos */}
+                        <Route path="bovines">
+                          <Route index element={<BovinesList />} />
+                          <Route path="new" element={<BovineForm />} />
+                          <Route path=":id" element={<BovineDetail />} />
+                          <Route path=":id/edit" element={<BovineForm />} />
+                        </Route>
                         
-                        {/* Rutas de producción */}
-                        <Route path="production" element={<ComingSoon pageName="Producción" />} />
-                        <Route path="production/milk" element={<ComingSoon pageName="Producción Lechera" />} />
-                        <Route path="production/record" element={<ComingSoon pageName="Registro de Producción" />} />
+                        {/* Control de salud */}
+                        <Route path="health">
+                          <Route index element={<HealthRecords />} />
+                          <Route path="vaccinations" element={<VaccinationSchedule />} />
+                          <Route path="treatments" element={<TreatmentHistory />} />
+                        </Route>
                         
-                        {/* Rutas de reproducción */}
-                        <Route path="breeding" element={<ComingSoon pageName="Reproducción" />} />
-                        <Route path="breeding/record" element={<ComingSoon pageName="Registro Reproductivo" />} />
+                        {/* Producción */}
+                        <Route path="production">
+                          <Route index element={<ProductionRecords />} />
+                          <Route path="milk" element={<MilkProduction />} />
+                        </Route>
                         
-                        {/* Rutas de inventario */}
+                        {/* Reproducción */}
+                        <Route path="reproduction">
+                          <Route index element={<ReproductionManagement />} />
+                          <Route path="breeding" element={<BreedingSchedule />} />
+                        </Route>
+                        
+                        {/* Reportes y analytics */}
+                        <Route path="reports">
+                          <Route index element={<Reports />} />
+                          <Route path="analytics" element={<Analytics />} />
+                        </Route>
+                        
+                        {/* Configuración */}
+                        <Route path="settings">
+                          <Route index element={<Settings />} />
+                          <Route path="profile" element={<Profile />} />
+                        </Route>
+                        
+                        {/* Páginas temporales */}
+                        <Route path="maps" element={<ComingSoon pageName="Mapas y Geolocalización" />} />
+                        <Route path="calendar" element={<ComingSoon pageName="Calendario de Eventos" />} />
+                        <Route path="finances" element={<ComingSoon pageName="Gestión Financiera" />} />
                         <Route path="inventory" element={<ComingSoon pageName="Inventario" />} />
-                        <Route path="inventory/:id" element={<ComingSoon pageName="Detalle de Inventario" />} />
-                        
-                        {/* Rutas financieras */}
-                        <Route path="finance" element={<ComingSoon pageName="Finanzas" />} />
-                        <Route path="finance/record" element={<ComingSoon pageName="Registro Financiero" />} />
-                        
-                        {/* Rutas de reportes */}
-                        <Route path="reports" element={<ComingSoon pageName="Reportes" />} />
-                        <Route path="reports/custom" element={<ComingSoon pageName="Reportes Personalizados" />} />
-                        
-                        {/* Rutas de eventos */}
-                        <Route path="events" element={<ComingSoon pageName="Eventos" />} />
-                        <Route path="calendar" element={<ComingSoon pageName="Calendario" />} />
-                        
-                        {/* Rutas de ubicación */}
-                        <Route path="maps" element={<ComingSoon pageName="Mapas" />} />
-                        <Route path="tracking" element={<ComingSoon pageName="Seguimiento" />} />
-                        
-                        {/* Rutas de configuración */}
-                        <Route path="settings" element={<ComingSoon pageName="Configuración" />} />
-                        <Route path="profile" element={<ComingSoon pageName="Mi Perfil" />} />
-                        <Route path="users" element={<ComingSoon pageName="Gestión de Usuarios" />} />
-                        
-                        {/* Rutas de ayuda */}
-                        <Route path="help" element={<ComingSoon pageName="Centro de Ayuda" />} />
                         
                         {/* Ruta 404 */}
                         <Route path="*" element={
@@ -148,79 +276,26 @@ const App = () => {
                               <p className="text-gray-600 dark:text-gray-400">
                                 La página que buscas no existe o ha sido movida.
                               </p>
-                              <div className="flex gap-3 justify-center">
-                                <button
-                                  onClick={() => window.history.back()}
-                                  className="btn-outline"
-                                >
-                                  Volver
-                                </button>
-                                <button
-                                  onClick={() => window.location.href = '/'}
-                                  className="btn-primary"
-                                >
-                                  Ir al Inicio
-                                </button>
-                              </div>
+                              <button
+                                onClick={() => window.history.back()}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                              >
+                                Volver atrás
+                              </button>
                             </div>
                           </div>
                         } />
                       </Routes>
-                    </Suspense>
-                  </Layout>
-                </Router>
-
-                {/* Configuración de React Hot Toast */}
-                <Toaster
-                  position="top-right"
-                  reverseOrder={false}
-                  gutter={8}
-                  containerClassName=""
-                  containerStyle={{}}
-                  toastOptions={{
-                    // Configuración por defecto para todos los toast
-                    duration: 4000,
-                    style: {
-                      background: '#363636',
-                      color: '#fff',
-                    },
-                    
-                    // Configuración específica por tipo
-                    success: {
-                      duration: 3000,
-                      theme: {
-                        primary: 'green',
-                        secondary: 'black',
-                      },
-                    },
-                    error: {
-                      duration: 5000,
-                      theme: {
-                        primary: 'red',
-                        secondary: 'black',
-                      },
-                    },
-                  }}
-                />
-
-                {/* React Query DevTools solo en desarrollo */}
-                {process.env.NODE_ENV === 'development' && (
-                  <Suspense fallback={null}>
-                    {/* Lazy load para evitar incluir en build de producción */}
-                    {React.lazy(() => 
-                      import('@tanstack/react-query-devtools').then(module => ({
-                        default: module.ReactQueryDevtools
-                      }))
-                    )}
-                  </Suspense>
-                )}
-              </NotificationProvider>
-            </DataProvider>
-          </ThemeProvider>
-        </AuthProvider>
-      </QueryClientProvider>
+                    </MainLayout>
+                  </ProtectedRoute>
+                } />
+              </Routes>
+            </Suspense>
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </ErrorBoundary>
-  );
-};
+  )
+}
 
-export default App;
+export default App

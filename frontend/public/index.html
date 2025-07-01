@@ -38,7 +38,7 @@
   <meta property="twitter:card" content="summary_large_image" />
   <meta property="twitter:url" content="https://bovinemanagement.com/" />
   <meta property="twitter:title" content="Sistema de Gestión de Bovinos - Tecnología para Ganaderos" />
-  <meta property="twitter:description" content="Gestiona tu ganado de manera inteligente con nuestro sistema integral. Control de salud, producción, reproducción y finanzas." />
+  <meta property="twitter:description" content="Gestiona tu ganado de manera inteligente con nuestro sistema integral. Control de salud, producción, reproducción y finanzas en una sola plataforma." />
   <meta property="twitter:image" content="/images/twitter-card.jpg" />
   <meta property="twitter:image:alt" content="Sistema de Gestión de Bovinos - Interfaz moderna" />
   
@@ -89,290 +89,257 @@
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" /></noscript>
   
-  <!-- DNS Prefetch para recursos externos -->
-  <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-  <link rel="dns-prefetch" href="//fonts.gstatic.com" />
-  <link rel="dns-prefetch" href="//api.bovinemanagement.com" />
-  <link rel="dns-prefetch" href="//unpkg.com" />
+  <!-- Leaflet CSS para mapas -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   
   <!-- Configuración de seguridad -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://unpkg.com;
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.spline.design;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com;
     font-src 'self' https://fonts.gstatic.com;
-    img-src 'self' data: https: blob:;
-    connect-src 'self' https://api.bovinemanagement.com wss://api.bovinemanagement.com;
-    media-src 'self' blob:;
+    img-src 'self' data: blob: https://*.openstreetmap.org https://unpkg.com;
+    connect-src 'self' https://api.openweathermap.org ws://localhost:* http://localhost:*;
+    media-src 'self';
     object-src 'none';
-    base-uri 'self';
-    form-action 'self';
-    frame-ancestors 'none';
-  " />
-  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-  <meta http-equiv="X-Frame-Options" content="DENY" />
-  <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
-  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
-  <meta http-equiv="Permissions-Policy" content="
-    camera=self,
-    microphone=self,
-    geolocation=self,
-    notifications=self,
-    persistent-storage=self,
-    push=self
+    frame-src 'self' https://my.spline.design;
   " />
   
-  <!-- Configuración de caché -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  
-  <!-- Structured Data para SEO -->
+  <!-- Esquema de datos estructurados -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebApplication",
+    "@type": "SoftwareApplication",
     "name": "Sistema de Gestión de Bovinos",
-    "description": "Sistema integral para la gestión de bovinos, control de salud, producción lechera, reproducción y finanzas del rancho",
-    "url": "https://bovinemanagement.com",
+    "description": "Sistema integral para la gestión de ganado bovino con control de salud, producción y ubicación.",
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Web Browser",
     "offers": {
       "@type": "Offer",
-      "category": "Software de Gestión Ganadera"
+      "price": "0",
+      "priceCurrency": "MXN"
     },
-    "featureList": [
-      "Gestión de bovinos",
-      "Control de salud animal",
-      "Producción lechera",
-      "Reproducción bovina",
-      "Finanzas ganaderas",
-      "Geolocalización",
-      "Reportes automatizados"
-    ],
-    "screenshot": "https://bovinemanagement.com/images/screenshot.jpg",
-    "author": {
+    "creator": {
       "@type": "Organization",
-      "name": "Sistema de Gestión de Bovinos"
+      "name": "Bovine Management Systems"
     }
   }
   </script>
   
-  <!-- Google Analytics (cuando se configure) -->
-  <!-- gtag('config', 'GA_MEASUREMENT_ID'); -->
-  
-  <!-- Configuración inicial de tema para evitar flash -->
+  <!-- Configuración inicial de tema -->
   <script>
+    // Aplicar tema antes de que se cargue la página para evitar flash
     (function() {
-      // Detectar preferencia de tema del sistema
-      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      // Obtener tema guardado del usuario
-      const savedTheme = localStorage.getItem('app_theme');
-      // Determinar tema inicial
-      const theme = savedTheme || (prefersDark ? 'dark' : 'light');
-      
-      // Aplicar tema inmediatamente para evitar flash
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-        document.documentElement.setAttribute('data-theme', 'dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-        document.documentElement.setAttribute('data-theme', 'light');
-      }
-      
-      // Configurar color de theme-color dinámicamente
-      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-      if (metaThemeColor) {
-        metaThemeColor.setAttribute('content', theme === 'dark' ? '#1E40AF' : '#3B82F6');
+      try {
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const shouldUseDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+        
+        if (shouldUseDark) {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {
+        console.warn('Error al aplicar tema:', e);
       }
     })();
   </script>
   
-  <!-- Configuración de loading inicial -->
+  <!-- CSS inline crítico para evitar FOUC -->
   <style>
-    /* Estilos críticos inline para loading inicial */
-    .loading-screen {
+    /* CSS crítico para cargar rápido */
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+    }
+    
+    body {
+      background-color: #f9fafb;
+      color: #111827;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    .dark body {
+      background-color: #111827;
+      color: #f9fafb;
+    }
+    
+    /* Loading inicial */
+    #root {
+      min-height: 100vh;
+    }
+    
+    .initial-loading {
       position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #3B82F6 0%, #10B981 100%);
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       z-index: 9999;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      color: white;
-      opacity: 1;
-      transition: opacity 0.5s ease-out;
-    }
-    
-    .loading-screen.fade-out {
-      opacity: 0;
-      pointer-events: none;
-    }
-    
-    .loading-logo {
-      width: 80px;
-      height: 80px;
-      margin-bottom: 24px;
-      animation: pulse 2s ease-in-out infinite;
-    }
-    
-    .loading-text {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 16px;
-      text-align: center;
-    }
-    
-    .loading-subtitle {
-      font-size: 14px;
-      opacity: 0.8;
-      text-align: center;
-      margin-bottom: 32px;
     }
     
     .loading-spinner {
-      width: 32px;
-      height: 32px;
-      border: 3px solid rgba(255, 255, 255, 0.3);
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid white;
       border-radius: 50%;
-      border-top-color: white;
-      animation: spin 1s ease-in-out infinite;
+      animation: spin 1s linear infinite;
     }
     
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.05); opacity: 0.8; }
+    .loading-text {
+      color: white;
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: 500;
     }
     
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
     
-    /* Ocultar loading cuando React se haya cargado */
-    #root:not(:empty) ~ .loading-screen {
+    /* Ocultar el loader cuando React esté listo */
+    .react-loaded .initial-loading {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+    
+    /* Prevent FOUC */
+    .no-js #root {
       display: none;
     }
     
-    /* Estilos para no-script fallback */
-    .noscript-warning {
-      background-color: #FEF2F2;
-      border: 1px solid #FECACA;
-      color: #991B1B;
-      padding: 16px;
-      margin: 16px;
-      border-radius: 8px;
-      text-align: center;
-      font-family: system-ui, sans-serif;
+    /* Critical CSS para botones */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.5rem;
+      border: none;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .btn-primary {
+      background-color: #3b82f6;
+      color: white;
+      padding: 0.5rem 1rem;
+    }
+    
+    .btn-primary:hover {
+      background-color: #2563eb;
     }
   </style>
 </head>
 
 <body class="h-full antialiased">
-  <!-- Mensaje para usuarios sin JavaScript -->
+  <!-- Loader inicial mientras carga React -->
+  <div id="initial-loader" class="initial-loading">
+    <div class="flex flex-col items-center">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Cargando Sistema de Gestión de Bovinos...</p>
+    </div>
+  </div>
+  
+  <!-- Contenedor principal de la aplicación React -->
+  <div id="root" class="h-full"></div>
+  
+  <!-- Fallback para usuarios sin JavaScript -->
   <noscript>
-    <div class="noscript-warning">
-      <h2>🐄 JavaScript Requerido</h2>
-      <p>
-        El Sistema de Gestión de Bovinos requiere JavaScript para funcionar correctamente. 
-        Por favor, habilita JavaScript en tu navegador y recarga la página.
+    <div style="padding: 2rem; text-align: center; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 0.5rem; margin: 2rem;">
+      <h2 style="color: #dc2626; margin-bottom: 1rem;">JavaScript Requerido</h2>
+      <p style="color: #7f1d1d; line-height: 1.6;">
+        Para utilizar el Sistema de Gestión de Bovinos, necesitas habilitar JavaScript en tu navegador.
+        Esta aplicación requiere JavaScript para funcionar correctamente.
       </p>
-      <p>
-        <strong>Características que necesitan JavaScript:</strong><br>
-        • Gestión en tiempo real de bovinos<br>
-        • Mapas interactivos con geolocalización<br>
-        • Gráficos de producción y salud<br>
-        • Sincronización de datos<br>
-        • Notificaciones automáticas
+      <p style="color: #7f1d1d; margin-top: 1rem;">
+        <strong>Cómo habilitar JavaScript:</strong><br>
+        • Chrome: Configuración → Privacidad y seguridad → Configuración del sitio → JavaScript<br>
+        • Firefox: about:config → javascript.enabled → true<br>
+        • Safari: Preferencias → Seguridad → Habilitar JavaScript
       </p>
     </div>
   </noscript>
-
-  <!-- Skip link para accesibilidad -->
-  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 bg-blue-600 text-white px-4 py-2 z-50">
-    Saltar al contenido principal
-  </a>
-
-  <!-- Contenedor principal de React -->
-  <div id="root" role="main" aria-label="Aplicación de Sistema de Gestión de Bovinos"></div>
-
-  <!-- Pantalla de carga inicial -->
-  <div class="loading-screen" id="initial-loading">
-    <!-- Logo del sistema (SVG inline para carga rápida) -->
-    <svg class="loading-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="50" cy="50" r="45" stroke="white" stroke-width="4" fill="none" opacity="0.3"/>
-      <path d="M30 45C30 35 35 30 45 30C55 30 60 35 60 45V55C60 65 55 70 45 70C35 70 30 65 30 55V45Z" fill="white"/>
-      <circle cx="40" cy="42" r="3" fill="currentColor" opacity="0.7"/>
-      <circle cx="55" cy="42" r="3" fill="currentColor" opacity="0.7"/>
-      <path d="M42 52C42 54 44 56 47 56C50 56 52 54 52 52" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      <path d="M35 25C35 20 40 15 50 15C60 15 65 20 65 25" stroke="white" stroke-width="3" stroke-linecap="round"/>
-    </svg>
-    
-    <div class="loading-text">Sistema de Gestión de Bovinos</div>
-    <div class="loading-subtitle">Cargando tecnología para ganaderos...</div>
-    <div class="loading-spinner"></div>
-  </div>
-
-  <!-- Script para ocultar loading cuando React esté listo -->
+  
+  <!-- Script principal de la aplicación React/Vite -->
+  <script type="module" src="/src/main.jsx"></script>
+  
+  <!-- Script para ocultar el loader cuando React esté listo -->
   <script>
-    // Ocultar pantalla de loading después de que React se haya montado
-    function hideLoadingScreen() {
-      const loadingScreen = document.getElementById('initial-loading');
-      if (loadingScreen) {
-        loadingScreen.classList.add('fade-out');
-        setTimeout(() => {
-          loadingScreen.remove();
-        }, 500);
-      }
-    }
-
-    // Verificar cuando React se haya montado
-    const observer = new MutationObserver((mutations) => {
-      const root = document.getElementById('root');
-      if (root && root.children.length > 0) {
-        hideLoadingScreen();
-        observer.disconnect();
+    // Ocultar loader cuando React se haya montado
+    document.addEventListener('DOMContentLoaded', function() {
+      // Verificar periódicamente si React se ha cargado
+      const checkReactLoaded = setInterval(function() {
+        const root = document.getElementById('root');
+        if (root && root.children.length > 0) {
+          const loader = document.getElementById('initial-loader');
+          if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(function() {
+              loader.style.display = 'none';
+            }, 500);
+          }
+          clearInterval(checkReactLoaded);
+        }
+      }, 100);
+      
+      // Fallback: ocultar loader después de 10 segundos máximo
+      setTimeout(function() {
+        const loader = document.getElementById('initial-loader');
+        if (loader) {
+          loader.style.display = 'none';
+        }
+        clearInterval(checkReactLoaded);
+      }, 10000);
+    });
+    
+    // Error handler global
+    window.addEventListener('error', function(e) {
+      console.error('Error global capturado:', e.error);
+      
+      // Mostrar mensaje de error amigable
+      const loader = document.getElementById('initial-loader');
+      if (loader) {
+        loader.innerHTML = `
+          <div style="text-align: center; color: white;">
+            <h2>Error al cargar la aplicación</h2>
+            <p>Por favor, recarga la página</p>
+            <button onclick="window.location.reload()" class="btn btn-primary" style="margin-top: 1rem;">
+              Recargar página
+            </button>
+          </div>
+        `;
       }
     });
-
-    // Observar cambios en el elemento root
-    observer.observe(document.getElementById('root'), {
-      childList: true,
-      subtree: true
-    });
-
-    // Fallback: ocultar loading después de 10 segundos máximo
-    setTimeout(hideLoadingScreen, 10000);
-
-    // Configurar service worker cuando esté disponible
-    if ('serviceWorker' in navigator && 'production' === 'production') {
-      window.addEventListener('load', () => {
+    
+    // Service Worker registration (solo en producción)
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+      window.addEventListener('load', function() {
         navigator.serviceWorker.register('/sw.js')
-          .then(registration => {
-            console.log('SW registered: ', registration);
+          .then(function(registration) {
+            console.log('SW registrado exitosamente:', registration.scope);
           })
-          .catch(registrationError => {
-            console.log('SW registration failed: ', registrationError);
+          .catch(function(registrationError) {
+            console.log('SW falló al registrarse:', registrationError);
           });
       });
     }
   </script>
-
-  <!-- Configuración de analytics y tracking (placeholder) -->
-  <!-- Google Analytics -->
-  <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script> -->
-  <!-- 
+  
+  <!-- Analytics y tracking (solo en producción) -->
   <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'GA_MEASUREMENT_ID');
+    // Google Analytics o similar se cargaría aquí en producción
+    if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+      // Código de analytics aquí
+    }
   </script>
-  -->
-
 </body>
 </html>
